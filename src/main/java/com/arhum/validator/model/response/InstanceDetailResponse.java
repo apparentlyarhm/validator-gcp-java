@@ -12,9 +12,12 @@ import java.util.Map;
 public class InstanceDetailResponse {
 
     private String instanceName;
+    private String machineType;
+    private String instanceId;
     private String status;
     private String creationTimestamp;
     private String publicIp;
+    private String cpuPlatform;
     private int cpuCores;
     private int memoryMb;
     private long maxPersistentDisksGb;

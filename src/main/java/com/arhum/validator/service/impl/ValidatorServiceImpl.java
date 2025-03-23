@@ -1,7 +1,7 @@
 package com.arhum.validator.service.impl;
 
 import com.arhum.validator.exception.BaseException;
-import com.arhum.validator.exception.InternalServerException;
+import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.response.CommonResponse;
 import com.arhum.validator.model.response.FirewallRuleResponse;
 import com.arhum.validator.model.response.InstanceDetailResponse;
@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
 
 @Service
 public class ValidatorServiceImpl implements ValidatorService {
@@ -32,14 +30,13 @@ public class ValidatorServiceImpl implements ValidatorService {
     @Value("${google.compute.firewall-name}")
     private String firewallName;
 
-
     @Override
     public CommonResponse doPong() {
         return new CommonResponse("pong!");
     }
 
     @Override
-    public CommonResponse addIpToFirewall(String address) {
+    public CommonResponse addIpToFirewall(AddressAddRequest request) {
         return null;
     }
 
@@ -64,8 +61,10 @@ public class ValidatorServiceImpl implements ValidatorService {
 
             InstanceDetailResponse response = new InstanceDetailResponse();
 
-
             response.setInstanceName(instance.getName());
+            response.setMachineType(machineType.getName());
+            response.setInstanceId(String.valueOf(instance.getId()));
+            response.setCpuPlatform(instance.getCpuPlatform());
             response.setStatus(instance.getStatus());
             response.setCreationTimestamp(instance.getCreationTimestamp());
             response.setPublicIp(publicIp);
