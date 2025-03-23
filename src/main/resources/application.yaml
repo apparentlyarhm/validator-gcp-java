@@ -1,0 +1,34 @@
+spring:
+  banner:
+    location: classpath:/ban.txt
+  application:
+    name: validator
+
+auth:
+  security:
+    white-list-urls:
+      /api/v2/ping,
+      /api/v2/machine,
+      /api/v2/firewall,
+      /misc/**
+
+springdoc: # http://localhost:8080/misc/swagger-ui/index.html
+  api-docs:
+    path: /misc/api-docs
+  swagger-ui:
+    path: /misc/swagger-ui.html
+    enabled: true
+    tagsSorter: alpha
+    operationsSorter: method
+
+google:
+  project-id: ${GOOGLE_CLOUD_PROJECT}
+  compute:
+    zone: ${GOOGLE_CLOUD_VM_ZONE}
+    instance-name: ${GOOGLE_CLOUD_VM_NAME}
+    firewall-name: ${GOOGLE_CLOUD_FIREWALL_NAME}
+
+logging:
+    com:
+      arhum:
+        validator: DEBUG
