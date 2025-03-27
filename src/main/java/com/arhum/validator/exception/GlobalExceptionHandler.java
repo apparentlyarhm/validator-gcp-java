@@ -1,5 +1,7 @@
 package com.arhum.validator.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -12,17 +14,18 @@ import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<Map<String, String>> handleIOException(IOException ex) {
-        // NEVER DO THIS. I am retard and lazy, so I will just return information to the frontend...
-        // It's not that deep bro
+        // can be refactored but im very lazy
         Map<String, String> errorResponse = new HashMap<>();
 
         errorResponse.put("timestamp", LocalDateTime.now().toString());
         errorResponse.put("status", String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()));
         errorResponse.put("error", "Internal Server Error");
-        errorResponse.put("message", ex.getMessage());
+
+        log.error("IOException: {}", ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }

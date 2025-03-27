@@ -12,6 +12,7 @@ import java.util.Map;
 public class InstanceDetailResponse {
 
     private String instanceName;
+    private String instanceZone;
     private String machineType;
     private String instanceId;
     private String status;

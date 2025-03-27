@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "api/v2", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -39,5 +40,11 @@ public class MainController {
     @Operation(summary = "Get Firewall details")
     public FirewallRuleResponse getFirewall() throws IOException {
         return validatorService.getFirewallDetails();
+    }
+
+    @GetMapping("/server-info")
+    @Operation(summary = "Get MOTD of the minecraft server")
+    public Map<String, Object> getServerInfo() throws IOException {
+        return validatorService.getServerInfo();
     }
 }

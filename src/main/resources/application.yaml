@@ -10,6 +10,7 @@ auth:
       /api/v2/ping,
       /api/v2/machine,
       /api/v2/firewall,
+      /api/v2/server-info,
       /misc/**
 
 springdoc: # http://localhost:8080/misc/swagger-ui/index.html
