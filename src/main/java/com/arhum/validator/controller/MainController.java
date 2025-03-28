@@ -1,15 +1,18 @@
 package com.arhum.validator.controller;
 
 import com.arhum.validator.exception.BaseException;
+import com.arhum.validator.model.request.GetServerInfoRequest;
 import com.arhum.validator.model.response.CommonResponse;
 import com.arhum.validator.model.response.FirewallRuleResponse;
 import com.arhum.validator.model.response.InstanceDetailResponse;
 import com.arhum.validator.service.contract.ValidatorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,19 +35,20 @@ public class MainController {
 
     @GetMapping(value = "/machine", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get VM details")
-    public InstanceDetailResponse getResponse() throws BaseException, IOException {
+    public InstanceDetailResponse getMachineDetailsResponse() throws BaseException, IOException {
         return validatorService.getMachineDetails();
     }
 
     @GetMapping(value = "/firewall", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get Firewall details")
-    public FirewallRuleResponse getFirewall() throws IOException {
+    public FirewallRuleResponse getFirewallDetails() throws IOException {
         return validatorService.getFirewallDetails();
     }
 
-    @GetMapping("/server-info")
+    @GetMapping(value = "/server-info", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get MOTD of the minecraft server")
-    public Map<String, Object> getServerInfo() throws IOException {
-        return validatorService.getServerInfo();
+    public Map<String, Object> getServerInfo(
+            @RequestBody @Valid GetServerInfoRequest request) throws IOException {
+        return validatorService.getServerInfo(request);
     }
 }

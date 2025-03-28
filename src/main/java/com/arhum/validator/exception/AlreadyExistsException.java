@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class AlreadyExistsException extends BaseException {
 
-    public AlreadyExistsException(String message) {
-        super(message);
+    public AlreadyExistsException(String message, int code) {
+        super(message, code);
     }
 }

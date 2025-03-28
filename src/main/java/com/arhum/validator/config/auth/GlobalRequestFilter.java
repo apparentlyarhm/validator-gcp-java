@@ -35,7 +35,7 @@ public class GlobalRequestFilter extends OncePerRequestFilter {
 
             try {
                 if (!validateToken(token)) {
-                    throw new InternalServerException("Token is invalid or expired");
+                    throw new InternalServerException("Token is invalid or expired", 40000);
                 }
             } catch (InternalServerException e) {
                 throw new RuntimeException(e);
@@ -77,7 +77,7 @@ public class GlobalRequestFilter extends OncePerRequestFilter {
             return Base64.getEncoder().encodeToString(hmacBytes);
 
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new InternalServerException("Error computing HMAC: " + e.getMessage());
+            throw new InternalServerException("Error computing HMAC: " + e.getMessage(), 60000);
         }
     }
 

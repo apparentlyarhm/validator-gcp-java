@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class InternalServerException extends BaseException {
 
-    public InternalServerException(String message) {
-        super(message);
+    public InternalServerException(String message, int code) {
+        super(message, code);
     }
 }

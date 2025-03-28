@@ -3,6 +3,7 @@ package com.arhum.validator.service.impl;
 import com.arhum.validator.exception.AlreadyExistsException;
 import com.arhum.validator.exception.BaseException;
 import com.arhum.validator.model.request.AddressAddRequest;
+import com.arhum.validator.model.request.GetServerInfoRequest;
 import com.arhum.validator.model.response.CommonResponse;
 import com.arhum.validator.model.response.FirewallRuleResponse;
 import com.arhum.validator.model.response.InstanceDetailResponse;
@@ -41,8 +42,6 @@ public class ValidatorServiceImpl implements ValidatorService {
     @Value("${minecraft-server.port}")
     private int port;
 
-    private final String ip = "34.143.138.93";
-
     @Override
     public CommonResponse doPong() {
         return new CommonResponse("pong!");
@@ -60,7 +59,7 @@ public class ValidatorServiceImpl implements ValidatorService {
 
                 for (Allowed allowed : allowedList) {
                     if (allowed.getPortsList().contains(ip)) {
-                        throw new AlreadyExistsException("IP address " + ip + " is already in the firewall rule");
+                        throw new AlreadyExistsException("IP address " + ip + " is already in the firewall rule", 10000);
                     }
                 }
 
@@ -72,9 +71,7 @@ public class ValidatorServiceImpl implements ValidatorService {
 
     @Override
     public InstanceDetailResponse getMachineDetails() throws IOException {
-        try (InstancesClient instancesClient = InstancesClient.create();
-             MachineTypesClient machineTypesClient = MachineTypesClient.create()) {
-
+        try (InstancesClient instancesClient = InstancesClient.create(); MachineTypesClient machineTypesClient = MachineTypesClient.create()) {
             Instance instance = instancesClient.get(projectId, zone, instanceName);
 
             String publicIp = null;
@@ -101,7 +98,7 @@ public class ValidatorServiceImpl implements ValidatorService {
             response.setPublicIp(publicIp);
             response.setCpuCores(machineType.getGuestCpus());
             response.setMemoryMb(machineType.getMemoryMb());
-            response.setDiskMb(instance.getDisks(0).getDiskSizeGb() * 1000L); // Change if more disks are added
+            response.setDiskGb(instance.getDisks(0).getDiskSizeGb()); // Change if more disks are added
 
             return response;
         }
@@ -114,6 +111,7 @@ public class ValidatorServiceImpl implements ValidatorService {
 
             String status = firewall.hasDisabled() && firewall.getDisabled() ? "DISABLED" : "ENABLED";
             String direction = firewall.getDirection();
+
             int allowedIpCount = firewall.getAllowedList()
                     .stream()
                     .mapToInt(Allowed::getPortsCount)
@@ -124,9 +122,11 @@ public class ValidatorServiceImpl implements ValidatorService {
     }
 
     @Override
-    public Map<String, Object> getServerInfo() throws IOException {
+    public Map<String, Object> getServerInfo(GetServerInfoRequest request) throws IOException {
         try (DatagramSocket socket = new DatagramSocket()) {
             socket.setSoTimeout(2000);
+            String ip = request.getAddress();
+
             logger.info("Socket created with a timeout of 2000ms");
 
             InetSocketAddress target = new InetSocketAddress(ip, port);

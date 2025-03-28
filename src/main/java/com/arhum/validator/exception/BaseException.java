@@ -8,8 +8,10 @@ import lombok.Setter;
 public class BaseException extends Exception {
 
     private String message;
+    private int code;
 
-    public BaseException(String message) {
+    public BaseException(String message, int code) {
         this.message = message;
+        this.code = code;
     }
 }

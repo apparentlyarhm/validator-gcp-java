@@ -2,6 +2,7 @@ package com.arhum.validator.service.contract;
 
 import com.arhum.validator.exception.BaseException;
 import com.arhum.validator.model.request.AddressAddRequest;
+import com.arhum.validator.model.request.GetServerInfoRequest;
 import com.arhum.validator.model.response.CommonResponse;
 import com.arhum.validator.model.response.FirewallRuleResponse;
 import com.arhum.validator.model.response.InstanceDetailResponse;
@@ -19,5 +20,5 @@ public interface ValidatorService {
 
     public FirewallRuleResponse getFirewallDetails() throws IOException;
 
-    Map<String, Object> getServerInfo() throws IOException;
+    Map<String, Object> getServerInfo(GetServerInfoRequest request) throws IOException;
 }
