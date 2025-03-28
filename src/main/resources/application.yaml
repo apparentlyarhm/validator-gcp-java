@@ -29,6 +29,9 @@ google:
     instance-name: ${GOOGLE_CLOUD_VM_NAME}
     firewall-name: ${GOOGLE_CLOUD_FIREWALL_NAME}
 
+minecraft:server:
+  port: {MINECRAFT_SERVER_PORT}
+
 logging:
     com:
       arhum:

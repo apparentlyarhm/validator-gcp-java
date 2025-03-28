@@ -16,12 +16,10 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,8 +38,10 @@ public class ValidatorServiceImpl implements ValidatorService {
     @Value("${google.compute.firewall-name}")
     private String firewallName;
 
+    @Value("${minecraft-server.port}")
+    private int port;
+
     private final String ip = "34.143.138.93";
-    private final int port = 25565;
 
     @Override
     public CommonResponse doPong() {
@@ -71,7 +71,7 @@ public class ValidatorServiceImpl implements ValidatorService {
     }
 
     @Override
-    public InstanceDetailResponse getMachineDetails() throws BaseException, IOException {
+    public InstanceDetailResponse getMachineDetails() throws IOException {
         try (InstancesClient instancesClient = InstancesClient.create();
              MachineTypesClient machineTypesClient = MachineTypesClient.create()) {
 
@@ -80,9 +80,7 @@ public class ValidatorServiceImpl implements ValidatorService {
             String publicIp = null;
             for (NetworkInterface networkInterface : instance.getNetworkInterfacesList()) {
                 if (!networkInterface.getAccessConfigsList().isEmpty()) {
-                    publicIp = networkInterface
-                            .getAccessConfigs(0)
-                            .getNatIP();
+                    publicIp = networkInterface.getAccessConfigs(0).getNatIP();
                     break;
                 }
             }
@@ -103,7 +101,7 @@ public class ValidatorServiceImpl implements ValidatorService {
             response.setPublicIp(publicIp);
             response.setCpuCores(machineType.getGuestCpus());
             response.setMemoryMb(machineType.getMemoryMb());
-            response.setMaxPersistentDisksGb(machineType.getMaximumPersistentDisksSizeGb());
+            response.setDiskMb(instance.getDisks(0).getDiskSizeGb() * 1000L); // Change if more disks are added
 
             return response;
         }

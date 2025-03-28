@@ -21,6 +21,6 @@ public class InstanceDetailResponse {
     private String cpuPlatform;
     private int cpuCores;
     private int memoryMb;
-    private long maxPersistentDisksGb;
+    private long diskMb;
     private Map<String, String> metadata;
 }
