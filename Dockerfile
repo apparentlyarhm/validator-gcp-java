@@ -1,9 +1,3 @@
-ARG GOOGLE_CLOUD_FIREWALL_NAME
-ARG GOOGLE_CLOUD_PROJECT
-ARG GOOGLE_CLOUD_VM_NAME
-ARG GOOGLE_CLOUD_VM_ZONE
-ARG MINECRAFT_SERVER_PORT
-
 FROM maven:3.9.6-eclipse-temurin-17-alpine AS thick
 
 WORKDIR /app
@@ -11,8 +5,14 @@ COPY . .
 RUN mvn clean install
 
 FROM eclipse-temurin:17 AS thin
-
 WORKDIR /app
+
+ARG GOOGLE_CLOUD_FIREWALL_NAME
+ARG GOOGLE_CLOUD_PROJECT
+ARG GOOGLE_CLOUD_VM_NAME
+ARG GOOGLE_CLOUD_VM_ZONE
+ARG MINECRAFT_SERVER_PORT
+
 COPY --from=thick /app/infra/starter.sh .
 COPY --from=thick /app/target/validator-0.0.1-SNAPSHOT.jar .
 
@@ -23,4 +23,4 @@ ENV GOOGLE_CLOUD_VM_ZONE=$GOOGLE_CLOUD_VM_ZONE
 ENV MINECRAFT_SERVER_PORT=$MINECRAFT_SERVER_PORT
 
 RUN chmod 755 starter.sh
-CMD bash -c "./starter.sh"
+CMD ["bash", "./starter.sh"]

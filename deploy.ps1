@@ -7,7 +7,7 @@ function Check-EmptyVars {
     foreach ($var in $vars) {
         if ([string]::IsNullOrWhiteSpace((Get-Variable -Name $var -ValueOnly))) {
             Write-Host "ERROR: Environment variable '$var' is missing or empty!" -ForegroundColor Red
-            exit 1  # Stop execution with an error code
+            exit 1
         }
     }
 }
@@ -51,7 +51,6 @@ Write-Host "Using Service Account: $SERVICE_ACCOUNT"
 $IMAGE_NAME = "$GOOGLE_CLOUD_VM_REGION-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/$GOOGLE_CLOUD_AR_REPO_NAME/$GOOGLE_CLOUD_CR_SERVICE_NAME`:latest"
 Write-Host "Using Image Name: $IMAGE_NAME"
 
-
 Write-Host "Authenticating with Google Cloud..."
 
 Write-Host "skipping gcloud auth login.."
@@ -62,12 +61,6 @@ gcloud auth configure-docker $GOOGLE_CLOUD_VM_REGION-docker.pkg.dev
 #Write-Host "Setting GCP Project..."
 #gcloud config set project $PROJECT_ID
 
-# For local, the compose file has the information about the env vars. In CI/CD, this will need some tweaking like adding the build args.
-#Write-Host "Building Docker Image..."
-#docker build -t "$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/$SERVICE_NAME:latest" .
-
-
-Write-Host "No image found. Building Docker Image..."
 docker build `
  --build-arg GOOGLE_CLOUD_FIREWALL_NAME="$GOOGLE_CLOUD_FIREWALL_NAME" `
  --build-arg GOOGLE_CLOUD_PROJECT="$GOOGLE_CLOUD_PROJECT" `
@@ -76,9 +69,8 @@ docker build `
  --build-arg MINECRAFT_SERVER_PORT="$MINECRAFT_SERVER_PORT" `
  -t "$IMAGE_NAME" .
 
-  Write-Host "Pushing image.."
-  docker push $IMAGE_NAME
-
+Write-Host "Pushing image.."
+docker push $IMAGE_NAME
 
 # Check if the service account exists
 $saExists = gcloud iam service-accounts list --project=$GOOGLE_CLOUD_PROJECT --format="value(email)" | Select-String -Pattern $SERVICE_ACCOUNT
@@ -92,7 +84,7 @@ Write-Host "Deploying to Cloud Run..."
 gcloud run deploy $GOOGLE_CLOUD_CR_SERVICE_NAME `
   --image=$IMAGE_NAME `
   --platform=managed `
-  --service-account="cloud-run-sa@$GOOGLE_CLOUD_PROJECT.iam.gserviceaccount.com" `
+  --service-account=$SERVICE_ACCOUNT `
   --region=$GOOGLE_CLOUD_VM_REGION `
   --allow-unauthenticated
 

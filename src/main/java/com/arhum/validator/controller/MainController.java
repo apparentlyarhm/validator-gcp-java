@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.Map;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin
 @RestController
 @RequestMapping(value = "api/v2", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Main Controller", description = "Each API will go here")

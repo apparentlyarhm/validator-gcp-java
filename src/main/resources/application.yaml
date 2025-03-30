@@ -7,10 +7,7 @@ spring:
 auth:
   security:
     white-list-urls:
-      /api/v2/ping,
-      /api/v2/machine,
-      /api/v2/firewall,
-      /api/v2/server-info,
+      /api/v2/**,
       /misc/**
 
 springdoc: # http://localhost:8080/misc/swagger-ui/index.html
@@ -29,7 +26,7 @@ google:
     instance-name: ${GOOGLE_CLOUD_VM_NAME}
     firewall-name: ${GOOGLE_CLOUD_FIREWALL_NAME}
 
-minecraft:server:
+minecraft-server:
   port: {MINECRAFT_SERVER_PORT}
 
 logging:
