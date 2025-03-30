@@ -1,1 +1,21 @@
+version: '3.8'
+
+# this compose file is only utilised for local building
 services:
+  mc-validator:
+    build:
+      context: .
+      args:
+        IMAGE_NAME: ${IMAGE_NAME}
+      dockerfile: Dockerfile
+    image: ${IMAGE_NAME}
+    environment:
+      - GOOGLE_CLOUD_FIREWALL_NAME=${GOOGLE_CLOUD_FIREWALL_NAME}
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      - GOOGLE_CLOUD_VM_NAME=${GOOGLE_CLOUD_VM_NAME}
+      - GOOGLE_CLOUD_VM_ZONE=${GOOGLE_CLOUD_VM_ZONE}
+      - MINECRAFT_SERVER_PORT=${MINECRAFT_SERVER_PORT}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+

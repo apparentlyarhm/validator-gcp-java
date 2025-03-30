@@ -20,5 +20,5 @@ public interface ValidatorService {
 
     public FirewallRuleResponse getFirewallDetails() throws IOException;
 
-    Map<String, Object> getServerInfo(GetServerInfoRequest request) throws IOException;
+    Map<String, Object> getServerInfo(String address) throws IOException;
 }

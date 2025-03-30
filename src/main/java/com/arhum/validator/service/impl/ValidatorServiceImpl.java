@@ -40,7 +40,7 @@ public class ValidatorServiceImpl implements ValidatorService {
     private String firewallName;
 
     @Value("${minecraft-server.port}")
-    private int port;
+    private String port;
 
     @Override
     public CommonResponse doPong() {
@@ -122,15 +122,14 @@ public class ValidatorServiceImpl implements ValidatorService {
     }
 
     @Override
-    public Map<String, Object> getServerInfo(GetServerInfoRequest request) throws IOException {
+    public Map<String, Object> getServerInfo(String address) throws IOException {
         try (DatagramSocket socket = new DatagramSocket()) {
             socket.setSoTimeout(2000);
-            String ip = request.getAddress();
 
             logger.info("Socket created with a timeout of 2000ms");
 
-            InetSocketAddress target = new InetSocketAddress(ip, port);
-            logger.info("Target server: {}@{}", ip, port);
+            InetSocketAddress target = new InetSocketAddress(address, Integer.parseInt(port));
+            logger.info("Target server: {}@{}", address, port);
 
             byte[] handshakeRequest = createHandshakePacket();
             logger.info("Generated handshake packet: {}", bytesToHex(handshakeRequest));

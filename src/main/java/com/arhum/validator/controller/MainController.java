@@ -11,14 +11,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Map;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(value = "api/v2", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Main Controller", description = "Each API will go here")
@@ -48,7 +46,7 @@ public class MainController {
     @GetMapping(value = "/server-info", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get MOTD of the minecraft server")
     public Map<String, Object> getServerInfo(
-            @RequestBody @Valid GetServerInfoRequest request) throws IOException {
-        return validatorService.getServerInfo(request);
+            @RequestParam String address) throws IOException {
+        return validatorService.getServerInfo(address);
     }
 }
