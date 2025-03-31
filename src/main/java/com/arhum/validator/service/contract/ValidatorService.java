@@ -6,6 +6,7 @@ import com.arhum.validator.model.request.GetServerInfoRequest;
 import com.arhum.validator.model.response.CommonResponse;
 import com.arhum.validator.model.response.FirewallRuleResponse;
 import com.arhum.validator.model.response.InstanceDetailResponse;
+import com.arhum.validator.model.response.MOTDResponse;
 
 import java.io.IOException;
 import java.util.Map;
@@ -20,5 +21,5 @@ public interface ValidatorService {
 
     public FirewallRuleResponse getFirewallDetails() throws IOException;
 
-    Map<String, Object> getServerInfo(String address) throws IOException;
+    MOTDResponse getServerInfo(String address) throws IOException;
 }

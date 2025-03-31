@@ -7,6 +7,7 @@ import com.arhum.validator.model.request.GetServerInfoRequest;
 import com.arhum.validator.model.response.CommonResponse;
 import com.arhum.validator.model.response.FirewallRuleResponse;
 import com.arhum.validator.model.response.InstanceDetailResponse;
+import com.arhum.validator.model.response.MOTDResponse;
 import com.arhum.validator.service.contract.ValidatorService;
 import com.google.cloud.compute.v1.*;
 import org.slf4j.Logger;
@@ -124,7 +125,7 @@ public class ValidatorServiceImpl implements ValidatorService {
     }
 
     @Override
-    public Map<String, Object> getServerInfo(String address) throws IOException {
+    public MOTDResponse getServerInfo(String address) throws IOException {
         try (DatagramSocket socket = new DatagramSocket()) {
             socket.setSoTimeout(2000);
             InetSocketAddress target = new InetSocketAddress(address, Integer.parseInt(port));
@@ -142,7 +143,7 @@ public class ValidatorServiceImpl implements ValidatorService {
 
             DatagramPacket fullResponsePacket = receivePacket(socket, responseBuffer);
 
-            return parseFullQueryResponse(fullResponsePacket.getData());
+            return new MOTDResponse(parseFullQueryResponse(fullResponsePacket.getData()));
         }
     }
 }
