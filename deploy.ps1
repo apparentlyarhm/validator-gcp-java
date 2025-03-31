@@ -14,6 +14,12 @@ function Check-EmptyVars {
 
 Write-Host "Local CI/CD (sort of) for testing..." -ForegroundColor Cyan
 
+docker info *> $null
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Docker is not running. Please start Docker and try again." -ForegroundColor Red
+    exit 1
+}
+
 # Load .env file and set environment variables
 Get-Content .env | ForEach-Object {
     if ($_ -match "^(.*)=(.*)$") {
