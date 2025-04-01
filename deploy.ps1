@@ -14,13 +14,23 @@ function Check-EmptyVars {
 
 Write-Host "Local CI/CD (sort of) for testing..." -ForegroundColor Cyan
 
+# docker, gh cli and gcloud cli is required
 docker info *> $null
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Docker is not running. Please start Docker and try again." -ForegroundColor Red
     exit 1
 }
 
-# Load .env file and set environment variables
+if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
+    Write-Host "ERROR: GitHub CLI (gh) is not installed. Please install it and try again." -ForegroundColor Red
+    exit 1
+}
+
+if (-not (Get-Command gcloud -ErrorAction SilentlyContinue)) {
+    Write-Host "ERROR: Google Cloud CLI (gcloud) is not installed. Please install it and try again." -ForegroundColor Red
+    exit 1
+}
+
 Get-Content .env | ForEach-Object {
     if ($_ -match "^(.*)=(.*)$") {
         $envName = $matches[1].Trim()
@@ -95,3 +105,13 @@ gcloud run deploy $GOOGLE_CLOUD_CR_SERVICE_NAME `
   --allow-unauthenticated
 
 Write-Host "Deployment completed!"
+
+# Get Cloud Run service URL
+$SERVICE_URL = gcloud run services describe $GOOGLE_CLOUD_CR_SERVICE_NAME --platform=managed --region=$GOOGLE_CLOUD_VM_REGION --format="value(status.url)"
+
+Write-Host "Cloud Run service URL: $SERVICE_URL"
+
+# Check if repository secret already exists and update only if different
+Write-Host "Updating GitHub repository secret CLOUD_RUN_SERVICE_URL..."
+$SERVICE_URL | gh secret set --repo apparentlyarhm/minecraft-vm-management-console CLOUD_RUN_SERVICE_URL
+Write-Host "Secret updated!"
