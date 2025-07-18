@@ -13,13 +13,17 @@ import java.util.Map;
 
 public interface ValidatorService {
 
-    public CommonResponse doPong();
+    CommonResponse doPong();
 
-    public CommonResponse addIpToFirewall(AddressAddRequest request) throws IOException, BaseException;
+    CommonResponse addIpToFirewall(AddressAddRequest request) throws BaseException;
 
-    public InstanceDetailResponse getMachineDetails() throws BaseException, IOException;
+    CommonResponse isIpPresent(String ip) throws BaseException;
 
-    public FirewallRuleResponse getFirewallDetails() throws IOException;
+    CommonResponse purgeFirewall() throws BaseException;
+
+    InstanceDetailResponse getMachineDetails() throws BaseException;
+
+    FirewallRuleResponse getFirewallDetails() throws BaseException;
 
     MOTDResponse getServerInfo(String address) throws IOException;
 }
