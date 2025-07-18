@@ -5,6 +5,10 @@ import com.arhum.validator.exception.InternalServerException;
 import com.arhum.validator.exception.InvalidTokenException;
 import com.arhum.validator.model.enums.Role;
 import com.arhum.validator.service.impl.ValidatorServiceImpl;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +33,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -44,10 +49,10 @@ public class GlobalRequestFilter extends OncePerRequestFilter {
     @Value("${github.authorized-email}")
     private String authorizedEmail;
 
-    @Autowired
-    private WebClient webClient;
+    @Value("${auth.security.signing-secret}")
+    private String jwtSecret;
 
-    // So GitHub directly doesn't give JWTs so it's just a hacky way to fetch currently logged-in user's email, and that's really what we want.
+    // So GitHub directly doesn't give JWTs so made our own
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
@@ -58,30 +63,26 @@ public class GlobalRequestFilter extends OncePerRequestFilter {
             logger.info("TOKEN FOUND :: {}", token);
 
             try {
-                Map<String, Object> userInfo = webClient.get()
-                        .uri("https://api.github.com/user")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                        .retrieve()
-                        .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                        .block();
+                Claims claims = Jwts.parser()
+                        .setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)))
+                        .build()
+                        .parseClaimsJws(token)
+                        .getBody();
 
-                String email = (String) userInfo.get("email");
-                logger.info("email :: {}", email);
+                String email = claims.get("email", String.class);
+                String role = claims.get("role", String.class);
 
-                if (email != null) {
-                    List<GrantedAuthority> authorities = Objects.equals(email, authorizedEmail)
-                            ? List.of(new SimpleGrantedAuthority(String.valueOf(Role.ADMIN)), new SimpleGrantedAuthority(String.valueOf(Role.USER)))
-                            : List.of(new SimpleGrantedAuthority(String.valueOf(Role.USER)));
+                logger.info("Extracted user: {}, role: {}", email, role);
 
-                    logger.info("CURRENT LOGGED IN USER HAS :: {} roles", authorities.size()); // 2 means an admin
-
-                    Authentication auth = new UsernamePasswordAuthenticationToken(email, null, authorities); // we don't maintain any credentials
+                if (email != null && role != null) {
+                    List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.toUpperCase()));
+                    Authentication auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
 
-            } catch (Exception e) {
-                // if the token in invalid, webclient itself will throw exception because the http request will have non-200 status code
-                logger.error("GOT EXCEPTION FROM REQUEST :: {} ", e.getMessage());
+
+            } catch (JwtException e) {
+                logger.error("JWT validation failed: {}", e.getMessage());
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), "Invalid GitHub token");
                 return;
             }

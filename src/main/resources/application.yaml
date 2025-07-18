@@ -15,6 +15,7 @@ auth:
       /api/v2/firewall/check-ip,
       /api/v2/server-info,
       /misc/**
+    signing-secret: ${SIGNING_SECRET}
 
 springdoc: # http://localhost:8080/misc/swagger-ui/index.html
   api-docs:
