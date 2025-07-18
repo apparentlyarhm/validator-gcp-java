@@ -118,34 +118,33 @@ public class ValidatorServiceImpl implements ValidatorService {
     @SneakyThrows
     @Override
     public CommonResponse purgeFirewall() throws BaseException {
-//
-//        Firewall firewall = firewallsClient.get(projectId, firewallName);
-//        List<String> newSourceIpList = new ArrayList<>(firewall.getSourceRangesList());
-//
-//        if (newSourceIpList.isEmpty()) {
-//            throw new BadRequestException("Allowed list is already empty!", 400);
-//        }
-//
-//        newSourceIpList.clear(); // essentially the main operation
-//
-//        Firewall newFirewallState = firewall.toBuilder()
-//                .clearSourceRanges()
-//                .addAllSourceRanges(newSourceIpList)
-//                .build();
-//
-//        PatchFirewallRequest patchRequest = PatchFirewallRequest.newBuilder()
-//                .setFirewall(firewallName)
-//                .setProject(projectId)
-//                .setFirewallResource(newFirewallState)
-//                .build();
-//
-//        // Execute patch
-//        Operation operation = firewallsClient.patchAsync(patchRequest).get();
-//
-//        // Optional: check operation status
-//        if (operation.hasError()) {
-//            throw new InternalServerException("Failed to patch firewall: " + operation.getError(), 500);
-//        }
+        Firewall firewall = firewallsClient.get(projectId, firewallName);
+        List<String> newSourceIpList = new ArrayList<>(firewall.getSourceRangesList());
+
+        if (newSourceIpList.isEmpty()) {
+            throw new BadRequestException("Allowed list is already empty!", 400);
+        }
+
+        newSourceIpList.clear(); // essentially the main operation
+
+        Firewall newFirewallState = firewall.toBuilder()
+                .clearSourceRanges()
+                .addAllSourceRanges(newSourceIpList)
+                .build();
+
+        PatchFirewallRequest patchRequest = PatchFirewallRequest.newBuilder()
+                .setFirewall(firewallName)
+                .setProject(projectId)
+                .setFirewallResource(newFirewallState)
+                .build();
+
+        // Execute patch
+        Operation operation = firewallsClient.patchAsync(patchRequest).get();
+
+        // Optional: check operation status
+        if (operation.hasError()) {
+            throw new InternalServerException("Failed to patch firewall: " + operation.getError(), 500);
+        }
         return new CommonResponse("Done");
     }
 
