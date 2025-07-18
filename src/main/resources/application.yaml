@@ -15,8 +15,6 @@ auth:
       /api/v2/firewall/check-ip,
       /api/v2/server-info,
       /misc/**
-    protected-urls:
-      /api/v2/firewall/purge
 
 springdoc: # http://localhost:8080/misc/swagger-ui/index.html
   api-docs:

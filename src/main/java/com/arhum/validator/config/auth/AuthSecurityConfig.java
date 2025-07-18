@@ -32,9 +32,6 @@ public class AuthSecurityConfig {
     @Value("${auth.security.white-list-urls}")
     List<String> authWhiteListedAPIs;
 
-    @Value("${auth.security.protected-urls}")
-    List<String> protectedApis;
-
     @Autowired
     private GlobalRequestFilter globalRequestFilter;
 
