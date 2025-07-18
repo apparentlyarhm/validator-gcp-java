@@ -14,6 +14,7 @@ import com.arhum.validator.service.contract.ValidatorService;
 import com.arhum.validator.util.GeneralUtils;
 import com.google.cloud.compute.v1.*;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.FieldMask;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,8 +125,8 @@ public class ValidatorServiceImpl implements ValidatorService {
         if (newSourceIpList.isEmpty()) {
             throw new BadRequestException("Allowed list is already empty!", 400);
         }
-
-        newSourceIpList.clear(); // essentially the main operation
+        newSourceIpList.clear();
+        newSourceIpList.add("1.1.1.1/32"); // A dummy address because emptying it wasn't working
 
         Firewall newFirewallState = firewall.toBuilder()
                 .clearSourceRanges()
@@ -204,10 +205,7 @@ public class ValidatorServiceImpl implements ValidatorService {
         String status = firewall.hasDisabled() && firewall.getDisabled() ? "DISABLED" : "ENABLED";
         String direction = firewall.getDirection();
 
-        int allowedIpCount = firewall.getAllowedList()
-                .stream()
-                .mapToInt(Allowed::getPortsCount)
-                .sum();
+        int allowedIpCount = firewall.getSourceRangesCount();
 
         return new FirewallRuleResponse(firewallName, status, direction, allowedIpCount);
 
