@@ -7,8 +7,16 @@ spring:
 auth:
   security:
     white-list-urls:
-      /api/v2/**,
+      /api/v2/auth/**,
+      /api/v2/ping,
+      /api/v2/machine,
+      /api/v2/firewall,
+      /api/v2/firewall/add-ip,
+      /api/v2/firewall/check-ip,
+      /api/v2/server-info,
       /misc/**
+    protected-urls:
+      /api/v2/firewall/purge
 
 springdoc: # http://localhost:8080/misc/swagger-ui/index.html
   api-docs:
@@ -28,6 +36,12 @@ google:
 
 minecraft-server:
   port: {MINECRAFT_SERVER_PORT}
+
+github:
+  client_id: ${GITHUB_CLIENT_ID}
+  client_secret: ${GITHUB_CLIENT_SECRET}
+  redirect_uri: ${GITHUB_CLIENT_REDIRECT_URI}
+  authorized-email: ${GITHUB_AUTH_EMAIL}
 
 logging:
     com:

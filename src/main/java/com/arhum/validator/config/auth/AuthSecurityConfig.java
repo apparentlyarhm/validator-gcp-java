@@ -1,5 +1,6 @@
 package com.arhum.validator.config.auth;
 
+import com.arhum.validator.model.enums.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,9 @@ public class AuthSecurityConfig {
     @Value("${auth.security.white-list-urls}")
     List<String> authWhiteListedAPIs;
 
+    @Value("${auth.security.protected-urls}")
+    List<String> protectedApis;
+
     @Autowired
     private GlobalRequestFilter globalRequestFilter;
 
@@ -41,8 +45,7 @@ public class AuthSecurityConfig {
 
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
-                                .requestMatchers(authWhiteListedAPIs.toArray(String[]::new))
-                                .permitAll()
+                                .requestMatchers(authWhiteListedAPIs.toArray(String[]::new)).permitAll()
                                 .anyRequest()
                                 .authenticated())
 
