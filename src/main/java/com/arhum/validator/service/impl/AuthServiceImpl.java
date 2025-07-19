@@ -36,8 +36,8 @@ public class AuthServiceImpl  implements AuthService {
     @Value("${github.client-secret}")
     private String clientSecret;
 
-    @Value("${github.redirect-uri}")
-    private String redirectUri;
+    @Value("${console.host}")
+    private String frontendHost;
 
     @Value("${github.authorized-email}")
     private String authorizedEmail;
@@ -50,10 +50,11 @@ public class AuthServiceImpl  implements AuthService {
 
     @Override
     public CommonResponse getGitHubLoginUrl() {
+        String red = frontendHost + "/callback";
         String url = UriComponentsBuilder
                 .fromUriString("https://github.com/login/oauth/authorize")
                 .queryParam("client_id", clientId)
-                .queryParam("redirect_uri", redirectUri)
+                .queryParam("redirect_uri",red )
                 .queryParam("scope", "read:user user:email")
                 .build()
                 .toUriString();
@@ -94,11 +95,12 @@ public class AuthServiceImpl  implements AuthService {
     }
 
     private GithubTokenResponse exchangeCodeForToken(String code) {
+        String red = frontendHost + "/callback";
         Map<String, String> body = Map.of(
                 "client_id", clientId,
                 "client_secret", clientSecret,
                 "code", code,
-                "redirect_uri", redirectUri
+                "redirect_uri", red
         );
 
         return webClient.post()

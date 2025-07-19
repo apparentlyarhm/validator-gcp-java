@@ -4,6 +4,9 @@ spring:
   application:
     name: validator
 
+console:
+  host: ${FE_HOST:http://localhost:3000}
+
 auth:
   security:
     white-list-urls:
