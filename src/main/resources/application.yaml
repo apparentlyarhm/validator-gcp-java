@@ -42,7 +42,6 @@ minecraft-server:
 github:
   client_id: ${GITHUB_CLIENT_ID}
   client_secret: ${GITHUB_CLIENT_SECRET}
-  redirect_uri: ${GITHUB_CLIENT_REDIRECT_URI}
   authorized-email: ${GITHUB_AUTH_EMAIL}
 
 logging:
