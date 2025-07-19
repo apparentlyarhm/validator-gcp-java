@@ -159,7 +159,12 @@ public class ValidatorServiceImpl implements ValidatorService {
         List<String> sourceIps = firewall.getSourceRangesList();
 
         CommonResponse response = new CommonResponse();
-        response.setMessage(String.valueOf(sourceIps.contains(target) ? IpStatus.PRESENT : IpStatus.NOT_PRESENT));
+        if (sourceIps.contains(target) || sourceIps.contains("0.0.0.0/0")){
+            // either IP is present or any address is allowed over the firewall, the frontend does not need to know
+            response.setMessage((String.valueOf(IpStatus.PRESENT)));
+        } else {
+            response.setMessage(String.valueOf(IpStatus.NOT_PRESENT));
+        }
 
         return response;
     }
