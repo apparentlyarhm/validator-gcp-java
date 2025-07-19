@@ -61,7 +61,7 @@ public class MainController {
         return validatorService.isIpPresent(ip);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping(value = "/firewall/purge", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Purges the current list of whitelisted URLs- ONLY ADMINS")
     public CommonResponse purge() throws BaseException {

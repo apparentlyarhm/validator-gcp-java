@@ -6,8 +6,13 @@ import com.arhum.validator.service.contract.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
 
 @CrossOrigin
 @RestController
@@ -25,8 +30,21 @@ public class AuthController {
     }
 
     @GetMapping("/callback")
-    @Operation(description = "Callback URI that exchanges the temp code for GH access tokens and generates server-issued JWT")
-    public LoginResponse callback(@RequestParam String code) {
-        return authService.issueJwtToken(code);
+    @Operation(description = "Callback URI. Exchanges code for JWT, then redirects user to the frontend.")
+    public ResponseEntity<Void> callback(@RequestParam String code) {
+        LoginResponse loginResponse = authService.issueJwtToken(code);
+        String token = loginResponse.getToken();
+
+        // This will create a URL like: http://localhost:3000/login-success?token=ey...
+        URI redirectUri = UriComponentsBuilder
+                .fromUriString("http://localhost:3000")
+                .path("/login-success")
+                .queryParam("token", token)
+                .build()
+                .toUri();
+
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(redirectUri)
+                .build();
     }
 }

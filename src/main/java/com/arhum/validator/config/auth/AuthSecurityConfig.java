@@ -35,6 +35,9 @@ public class AuthSecurityConfig {
     @Autowired
     private GlobalRequestFilter globalRequestFilter;
 
+    @Autowired
+    private CustomAccessDeniedHandler accessDeniedHandler;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         logger.info("whitelisted: {}", authWhiteListedAPIs);
@@ -51,7 +54,8 @@ public class AuthSecurityConfig {
                                 .authenticationEntryPoint(authEntryPoint))
 
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->
-                        httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                        httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler));
 
         httpSecurity.addFilterBefore(globalRequestFilter, UsernamePasswordAuthenticationFilter.class);
         httpSecurity.cors(Customizer.withDefaults());
