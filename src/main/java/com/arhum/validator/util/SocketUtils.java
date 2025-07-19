@@ -32,11 +32,7 @@ public class SocketUtils {
         }
 
         String challengeString = new String(responseData, start, end - start, StandardCharsets.UTF_8).trim();
-        int challengeToken = Integer.parseInt(challengeString);
-
-        logger.info("Parsed challenge token: {} -> Big-endian: {}", challengeToken, bytesToHex(ByteBuffer.allocate(4).putInt(challengeToken).array()));
-
-        return challengeToken;
+        return Integer.parseInt(challengeString);
     }
 
     public static byte[] createFullQueryPacket(int challengeToken) {
@@ -45,10 +41,7 @@ public class SocketUtils {
         buffer.putInt(challengeToken); // Challenge token as big-endian
         buffer.put(new byte[]{0x00, 0x00, 0x00, 0x00}); // Padding
 
-        byte[] fullQueryPacket = buffer.array();
-        logger.info("Created full query packet: {}", bytesToHex(fullQueryPacket));
-
-        return fullQueryPacket;
+        return buffer.array();
     }
 
     public static Map<String, Object> parseFullQueryResponse(byte[] responseData) {
@@ -60,7 +53,6 @@ public class SocketUtils {
 
         String[] sections = responseString.split("\u0000\u0001player_\u0000\u0000");
         if (sections.length < 2) {
-            logger.warn("Unexpected response format. Returning partial data.");
             return serverInfo;
         }
 
@@ -73,7 +65,6 @@ public class SocketUtils {
         List<String> playerList = Arrays.stream(players).filter(p -> !p.isEmpty()).collect(Collectors.toList());
 
         serverInfo.put("players", playerList);
-        logger.info("Parsed server info: {}", serverInfo);
 
         return serverInfo;
     }
@@ -91,7 +82,6 @@ public class SocketUtils {
     public static void sendPacket(DatagramSocket socket, InetSocketAddress targetAddress, byte... data) throws IOException {
         DatagramPacket sendPacket = new DatagramPacket(data, data.length, targetAddress.getAddress(), targetAddress.getPort());
         socket.send(sendPacket);
-        logger.info("sent packet: {} to {} @ {}", bytesToHex(data), targetAddress.getAddress(), targetAddress.getPort());
     }
 
     /**
@@ -124,7 +114,6 @@ public class SocketUtils {
     public static DatagramPacket receivePacket(DatagramSocket socket, byte[] buffer) throws IOException {
         final DatagramPacket dp = new DatagramPacket(buffer, buffer.length);
         socket.receive(dp);
-        logger.info("Received response: {}", bytesToHex(dp.getData()));
         return dp;
     }
 
