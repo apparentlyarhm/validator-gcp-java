@@ -6,15 +6,15 @@ import com.arhum.validator.exception.BaseException;
 import com.arhum.validator.exception.InternalServerException;
 import com.arhum.validator.model.enums.IpStatus;
 import com.arhum.validator.model.request.AddressAddRequest;
-import com.arhum.validator.model.response.CommonResponse;
-import com.arhum.validator.model.response.FirewallRuleResponse;
-import com.arhum.validator.model.response.InstanceDetailResponse;
-import com.arhum.validator.model.response.MOTDResponse;
+import com.arhum.validator.model.response.*;
 import com.arhum.validator.service.contract.ValidatorService;
 import com.arhum.validator.util.GeneralUtils;
 import com.google.cloud.compute.v1.*;
+import com.google.cloud.storage.*;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.FieldMask;
+import com.google.storage.v2.BucketName;
+import com.google.storage.v2.StorageClient;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +22,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.arhum.validator.util.SocketUtils.*;
 
@@ -50,6 +57,12 @@ public class ValidatorServiceImpl implements ValidatorService {
     @Value("${minecraft-server.port}")
     private String port;
 
+    @Value("${google.storage.bucket}")
+    private String bucketName;
+
+    @Value("${google.storage.filename}")
+    private String fileName;
+
     @Autowired
     private FirewallsClient firewallsClient;
 
@@ -58,6 +71,9 @@ public class ValidatorServiceImpl implements ValidatorService {
 
     @Autowired
     private InstancesClient instancesClient;
+
+    @Autowired
+    private Storage storage;
 
     @Override
     public CommonResponse doPong() {
@@ -237,5 +253,42 @@ public class ValidatorServiceImpl implements ValidatorService {
 
             return new MOTDResponse(parseFullQueryResponse(fullResponsePacket.getData()));
         }
+    }
+
+    @Override
+    public ModListResponse getModList() throws BaseException {
+        List<String> modFiles;
+        String updatedAt;
+
+        // in a proper scenario, this must be a bucketProvider that will have the try catch there, this code here will therefore look cleaner.
+        try {
+            Blob blob = storage.get(BlobId.of(bucketName, fileName));
+
+            if (blob == null) {
+                logger.info("not found");
+                throw new InternalServerException("Something went wrong", 500);
+            }
+
+            byte[] content = blob.getContent();
+            String fileContent = new String(content, StandardCharsets.UTF_8);
+
+            modFiles = Arrays.stream(fileContent.split("\n"))
+                    .map(path -> {
+                        String fileName = path.substring(path.lastIndexOf("/") + 1);
+                        return fileName.replaceAll("\\.jar$", "");
+                    })
+                    .toList();
+            updatedAt = Instant.ofEpochMilli(blob.getUpdateTime()).atZone(ZoneId.of("Asia/Kolkata")).toLocalDateTime().toString(); // we can rely on this
+
+        } catch (StorageException e) {
+            logger.info("GCS error :: {}", e.getMessage());
+            throw new InternalServerException("Something went wrong", 500);
+        }
+
+        ModListResponse response = new ModListResponse();
+        response.setMods(modFiles);
+        response.setUpdatedAt(updatedAt);
+
+        return response;
     }
 }

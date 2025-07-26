@@ -3,10 +3,7 @@ package com.arhum.validator.controller;
 import com.arhum.validator.exception.BaseException;
 import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.request.GetServerInfoRequest;
-import com.arhum.validator.model.response.CommonResponse;
-import com.arhum.validator.model.response.FirewallRuleResponse;
-import com.arhum.validator.model.response.InstanceDetailResponse;
-import com.arhum.validator.model.response.MOTDResponse;
+import com.arhum.validator.model.response.*;
 import com.arhum.validator.service.contract.ValidatorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -72,5 +69,11 @@ public class MainController {
     @Operation(summary = "Get MOTD of the minecraft server")
     public MOTDResponse getServerInfo(@RequestParam String address) throws IOException {
         return validatorService.getServerInfo(address);
+    }
+
+    @GetMapping(value = "/mods", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get current Modlist of the minecraft server")
+    public ModListResponse getMods() throws BaseException {
+        return validatorService.getModList();
     }
 }

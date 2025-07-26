@@ -3,10 +3,7 @@ package com.arhum.validator.service.contract;
 import com.arhum.validator.exception.BaseException;
 import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.request.GetServerInfoRequest;
-import com.arhum.validator.model.response.CommonResponse;
-import com.arhum.validator.model.response.FirewallRuleResponse;
-import com.arhum.validator.model.response.InstanceDetailResponse;
-import com.arhum.validator.model.response.MOTDResponse;
+import com.arhum.validator.model.response.*;
 
 import java.io.IOException;
 import java.util.Map;
@@ -26,4 +23,6 @@ public interface ValidatorService {
     FirewallRuleResponse getFirewallDetails() throws BaseException;
 
     MOTDResponse getServerInfo(String address) throws IOException;
+
+    ModListResponse getModList() throws BaseException;
 }

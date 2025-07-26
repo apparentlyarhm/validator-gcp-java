@@ -17,6 +17,7 @@ auth:
       /api/v2/firewall/add-ip,
       /api/v2/firewall/check-ip,
       /api/v2/server-info,
+      /api/v2/mods,
       /misc/**
     signing-secret: ${SIGNING_SECRET}
 
@@ -35,6 +36,9 @@ google:
     zone: ${GOOGLE_CLOUD_VM_ZONE}
     instance-name: ${GOOGLE_CLOUD_VM_NAME}
     firewall-name: ${GOOGLE_CLOUD_FIREWALL_NAME}
+  storage:
+    bucket: ${GOOGLE_CLOUD_BUCKET_NAME}
+    filename: modlist.txt
 
 minecraft-server:
   port: {MINECRAFT_SERVER_PORT}
