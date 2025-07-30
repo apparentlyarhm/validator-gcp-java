@@ -2,20 +2,17 @@ package com.arhum.validator.controller;
 
 import com.arhum.validator.exception.BaseException;
 import com.arhum.validator.model.request.AddressAddRequest;
-import com.arhum.validator.model.request.GetServerInfoRequest;
 import com.arhum.validator.model.response.*;
 import com.arhum.validator.service.contract.ValidatorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Map;
 
 @CrossOrigin
 @RestController
@@ -63,6 +60,12 @@ public class MainController {
     @Operation(summary = "Purges the current list of whitelisted URLs- ONLY ADMINS")
     public CommonResponse purge() throws BaseException {
         return validatorService.purgeFirewall();
+    }
+
+    @GetMapping(value = "/mods/download/{fileName}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Downloads a mod by filename, if it exists")
+    public CommonResponse download(@PathVariable String fileName) throws BaseException {
+        return validatorService.download(fileName);
     }
 
     @GetMapping(value = "/server-info", produces = MediaType.APPLICATION_JSON_VALUE)

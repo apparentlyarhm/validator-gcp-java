@@ -17,7 +17,7 @@ auth:
       /api/v2/firewall/add-ip,
       /api/v2/firewall/check-ip,
       /api/v2/server-info,
-      /api/v2/mods,
+      /api/v2/mods/**,
       /misc/**
     signing-secret: ${SIGNING_SECRET}
 
@@ -41,7 +41,7 @@ google:
     filename: modlist.txt
 
 minecraft-server:
-  port: {MINECRAFT_SERVER_PORT}
+  port: { MINECRAFT_SERVER_PORT }
 
 github:
   client_id: ${GITHUB_CLIENT_ID}
@@ -49,6 +49,6 @@ github:
   authorized-email: ${GITHUB_AUTH_EMAIL}
 
 logging:
-    com:
-      arhum:
-        validator: DEBUG
+  com:
+    arhum:
+      validator: DEBUG

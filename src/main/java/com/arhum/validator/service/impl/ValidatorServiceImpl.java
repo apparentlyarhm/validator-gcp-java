@@ -1,9 +1,6 @@
 package com.arhum.validator.service.impl;
 
-import com.arhum.validator.exception.AlreadyExistsException;
-import com.arhum.validator.exception.BadRequestException;
-import com.arhum.validator.exception.BaseException;
-import com.arhum.validator.exception.InternalServerException;
+import com.arhum.validator.exception.*;
 import com.arhum.validator.model.enums.IpStatus;
 import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.response.*;
@@ -11,10 +8,6 @@ import com.arhum.validator.service.contract.ValidatorService;
 import com.arhum.validator.util.GeneralUtils;
 import com.google.cloud.compute.v1.*;
 import com.google.cloud.storage.*;
-import com.google.protobuf.Descriptors;
-import com.google.protobuf.FieldMask;
-import com.google.storage.v2.BucketName;
-import com.google.storage.v2.StorageClient;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,19 +15,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.arhum.validator.util.SocketUtils.*;
 
@@ -103,7 +95,7 @@ public class ValidatorServiceImpl implements ValidatorService {
             throw new AlreadyExistsException("This IP already exists in the firewall rule!", 2222);
         }
         // Adding logic
-        if (newSourceIpList.size() > 50){
+        if (newSourceIpList.size() > 50) {
             // We will purge all current addresses.
             newSourceIpList.clear();
         }
@@ -175,7 +167,7 @@ public class ValidatorServiceImpl implements ValidatorService {
         List<String> sourceIps = firewall.getSourceRangesList();
 
         CommonResponse response = new CommonResponse();
-        if (sourceIps.contains(target) || sourceIps.contains("0.0.0.0/0")){
+        if (sourceIps.contains(target) || sourceIps.contains("0.0.0.0/0")) {
             // either IP is present or any address is allowed over the firewall, the frontend does not need to know
             response.setMessage((String.valueOf(IpStatus.PRESENT)));
         } else {
@@ -290,5 +282,37 @@ public class ValidatorServiceImpl implements ValidatorService {
         response.setUpdatedAt(updatedAt);
 
         return response;
+    }
+
+    @Override
+    public CommonResponse download(String object) throws BaseException {
+        long expiryInMinutes = 15;
+
+        String blobPath = "files/" + object + ".jar"; // this is in accordance to what the frontend sees, so have to add the prefix and suffix.
+        BlobId blobId = BlobId.of(bucketName, blobPath);
+
+        try {
+            Blob blob = storage.get(blobId);
+            if (blob == null || !blob.exists()) {
+                logger.warn("File not found in GCS: {}", blobPath);
+                throw new NotFoundException("File not found: " + object, 40000);
+            }
+
+            BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+
+            URL signedUrl = storage.signUrl(
+                    blobInfo,
+                    expiryInMinutes,
+                    TimeUnit.MINUTES,
+                    Storage.SignUrlOption.withV4Signature(),
+                    Storage.SignUrlOption.httpMethod(HttpMethod.GET)
+            );
+
+            return new CommonResponse(signedUrl.toString());
+
+        } catch (StorageException e) {
+            logger.info("GCS error while downloading :: {}", e.getMessage());
+            throw new InternalServerException("Something went wrong", 500);
+        }
     }
 }

@@ -2,11 +2,9 @@ package com.arhum.validator.service.contract;
 
 import com.arhum.validator.exception.BaseException;
 import com.arhum.validator.model.request.AddressAddRequest;
-import com.arhum.validator.model.request.GetServerInfoRequest;
 import com.arhum.validator.model.response.*;
 
 import java.io.IOException;
-import java.util.Map;
 
 public interface ValidatorService {
 
@@ -25,4 +23,6 @@ public interface ValidatorService {
     MOTDResponse getServerInfo(String address) throws IOException;
 
     ModListResponse getModList() throws BaseException;
+
+    CommonResponse download(String object) throws BaseException;
 }
