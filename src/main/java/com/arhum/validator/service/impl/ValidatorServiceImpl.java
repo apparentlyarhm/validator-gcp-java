@@ -286,7 +286,7 @@ public class ValidatorServiceImpl implements ValidatorService {
 
     @Override
     public CommonResponse download(String object) throws BaseException {
-        long expiryInMinutes = 15;
+        long expiryInMinutes = 5;
 
         String blobPath = "files/" + object + ".jar"; // this is in accordance to what the frontend sees, so have to add the prefix and suffix.
         BlobId blobId = BlobId.of(bucketName, blobPath);
