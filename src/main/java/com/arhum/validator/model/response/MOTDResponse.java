@@ -13,12 +13,9 @@ import java.util.Map;
 public class MOTDResponse {
 
     private String hostname;
-    private String hostIp;
-    private String plugins;
     private int numPlayers;
     private List<String> players;
     private String gameType;
-    private String um;
     private int maxPlayers;
     private int hostPort;
     private String version;
@@ -27,12 +24,9 @@ public class MOTDResponse {
 
     public MOTDResponse(Map<String, Object> rawData) {
         this.hostname = (String) rawData.getOrDefault("hostname", "");
-        this.hostIp = (String) rawData.getOrDefault("hostip", "");
-        this.plugins = (String) rawData.getOrDefault("plugins", "");
         this.numPlayers = Integer.parseInt((String) rawData.getOrDefault("numplayers", "0"));
         this.players = (List<String>) rawData.getOrDefault("players", List.of());
         this.gameType = (String) rawData.getOrDefault("gametype", "");
-        this.um = (String) rawData.getOrDefault("um", "");
         this.maxPlayers = Integer.parseInt((String) rawData.getOrDefault("maxplayers", "0"));
         this.hostPort = Integer.parseInt((String) rawData.getOrDefault("hostport", "25565"));
         this.version = (String) rawData.getOrDefault("version", "");
@@ -45,12 +39,9 @@ public class MOTDResponse {
     public String toString() {
         return "ServerInfo{" +
                 "hostname='" + hostname + '\'' +
-                ", hostIp='" + hostIp + '\'' +
-                ", plugins='" + plugins + '\'' +
                 ", numPlayers=" + numPlayers +
                 ", players=" + players +
                 ", gameType='" + gameType + '\'' +
-                ", um='" + um + '\'' +
                 ", maxPlayers=" + maxPlayers +
                 ", hostPort=" + hostPort +
                 ", version='" + version + '\'' +
