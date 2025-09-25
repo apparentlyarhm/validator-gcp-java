@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -78,5 +79,11 @@ public class MainController {
     @Operation(summary = "Get current Modlist of the minecraft server")
     public ModListResponse getMods() throws BaseException {
         return validatorService.getModList();
+    }
+
+    @PostMapping(value = "/mods/final", produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @Operation(summary = "Upload final mod ZIP. has to be done by admins")
+    public CommonResponse uploadFinal(MultipartFile file) throws BaseException {
+        return validatorService.uploadFinalZip(file);
     }
 }

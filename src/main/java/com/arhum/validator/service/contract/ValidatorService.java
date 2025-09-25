@@ -3,6 +3,7 @@ package com.arhum.validator.service.contract;
 import com.arhum.validator.exception.BaseException;
 import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.response.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
@@ -25,4 +26,6 @@ public interface ValidatorService {
     ModListResponse getModList() throws BaseException;
 
     CommonResponse download(String object) throws BaseException;
+
+    CommonResponse uploadFinalZip(MultipartFile file) throws BaseException;
 }

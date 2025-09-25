@@ -1,19 +1,24 @@
 package com.arhum.validator.service.impl;
 
-import com.arhum.validator.exception.*;
+import com.arhum.validator.exception.AlreadyExistsException;
+import com.arhum.validator.exception.BadRequestException;
+import com.arhum.validator.exception.BaseException;
+import com.arhum.validator.exception.InternalServerException;
 import com.arhum.validator.model.enums.IpStatus;
 import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.response.*;
+import com.arhum.validator.provider.contract.GcsProvider;
 import com.arhum.validator.service.contract.ValidatorService;
 import com.arhum.validator.util.GeneralUtils;
 import com.google.cloud.compute.v1.*;
-import com.google.cloud.storage.*;
+import com.google.cloud.storage.Blob;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -26,7 +31,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static com.arhum.validator.util.SocketUtils.*;
 
@@ -49,9 +53,6 @@ public class ValidatorServiceImpl implements ValidatorService {
     @Value("${minecraft-server.port}")
     private String port;
 
-    @Value("${google.storage.bucket}")
-    private String bucketName;
-
     @Value("${google.storage.filename}")
     private String fileName;
 
@@ -65,7 +66,7 @@ public class ValidatorServiceImpl implements ValidatorService {
     private InstancesClient instancesClient;
 
     @Autowired
-    private Storage storage;
+    private GcsProvider gcsProvider;
 
     @Override
     public CommonResponse doPong() {
@@ -252,30 +253,17 @@ public class ValidatorServiceImpl implements ValidatorService {
         List<String> modFiles;
         String updatedAt;
 
-        // in a proper scenario, this must be a bucketProvider that will have the try catch there, this code here will therefore look cleaner.
-        try {
-            Blob blob = storage.get(BlobId.of(bucketName, fileName));
+        Blob blob = gcsProvider.getBlob(fileName);
+        String fileContent = new String(blob.getContent(), StandardCharsets.UTF_8);
 
-            if (blob == null) {
-                logger.info("not found");
-                throw new InternalServerException("Something went wrong", 500);
-            }
+        modFiles = Arrays.stream(fileContent.split("\n"))
+                .filter(path -> !path.trim().isEmpty())
+                .map(path -> path.substring(path.lastIndexOf("/") + 1).replaceAll("\\.jar$", ""))
+                .toList();
 
-            byte[] content = blob.getContent();
-            String fileContent = new String(content, StandardCharsets.UTF_8);
-
-            modFiles = Arrays.stream(fileContent.split("\n"))
-                    .map(path -> {
-                        String fileName = path.substring(path.lastIndexOf("/") + 1);
-                        return fileName.replaceAll("\\.jar$", "");
-                    })
-                    .toList();
-            updatedAt = Instant.ofEpochMilli(blob.getUpdateTime()).atZone(ZoneId.of("Asia/Kolkata")).toLocalDateTime().toString(); // we can rely on this
-
-        } catch (StorageException e) {
-            logger.info("GCS error :: {}", e.getMessage());
-            throw new InternalServerException("Something went wrong", 500);
-        }
+        updatedAt = Instant.ofEpochMilli(blob.getUpdateTime())
+                .atZone(ZoneId.of("Asia/Kolkata"))
+                .toString();
 
         ModListResponse response = new ModListResponse();
         response.setMods(modFiles);
@@ -286,33 +274,17 @@ public class ValidatorServiceImpl implements ValidatorService {
 
     @Override
     public CommonResponse download(String object) throws BaseException {
-        long expiryInMinutes = 5;
-
         String blobPath = "files/" + object + ".jar"; // this is in accordance to what the frontend sees, so have to add the prefix and suffix.
-        BlobId blobId = BlobId.of(bucketName, blobPath);
+        URL signedUrl = gcsProvider.generateV4SignedUrl(blobPath);
 
-        try {
-            Blob blob = storage.get(blobId);
-            if (blob == null || !blob.exists()) {
-                logger.warn("File not found in GCS: {}", blobPath);
-                throw new NotFoundException("File not found: " + object, 40000);
-            }
+        return new CommonResponse(signedUrl.toString());
+    }
 
-            BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+    @Override
+    public CommonResponse uploadFinalZip(MultipartFile file) throws BaseException {
+        String blobName = "final/final.zip";
+        gcsProvider.uploadFile(blobName, file, "application/zip");
 
-            URL signedUrl = storage.signUrl(
-                    blobInfo,
-                    expiryInMinutes,
-                    TimeUnit.MINUTES,
-                    Storage.SignUrlOption.withV4Signature(),
-                    Storage.SignUrlOption.httpMethod(HttpMethod.GET)
-            );
-
-            return new CommonResponse(signedUrl.toString());
-
-        } catch (StorageException e) {
-            logger.info("GCS error while downloading :: {}", e.getMessage());
-            throw new InternalServerException("Something went wrong", 500);
-        }
+        return new CommonResponse("File uploaded successfully.");
     }
 }
