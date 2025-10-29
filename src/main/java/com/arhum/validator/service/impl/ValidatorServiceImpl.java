@@ -254,23 +254,28 @@ public class ValidatorServiceImpl implements ValidatorService {
 
         // in a proper scenario, this must be a bucketProvider that will have the try catch there, this code here will therefore look cleaner.
         try {
+            // we look for modlist.txt and try to parse it.
             Blob blob = storage.get(BlobId.of(bucketName, fileName));
 
-            if (blob == null) {
+            if (blob != null) {
+                byte[] content = blob.getContent();
+                String fileContent = new String(content, StandardCharsets.UTF_8);
+
+                modFiles = Arrays.stream(fileContent.split("\n"))
+                        .map(path -> {
+                            String fileName = path.substring(path.lastIndexOf("/") + 1);
+                            return fileName.replaceAll("\\.jar$", "");
+                        })
+                        .toList();
+                updatedAt = Instant.ofEpochMilli(blob.getUpdateTime()).atZone(ZoneId.of("Asia/Kolkata")).toLocalDateTime().toString(); // we can rely on this
+
+            } else {
+                // if the text file doesnt exist, highly likely that the mods are not available to download, at least partially.
+                // we can return an empty response for better UX
                 logger.info("not found");
-                throw new InternalServerException("Something went wrong", 500);
+                modFiles = new ArrayList<>();
+                updatedAt = Instant.now().atZone(ZoneId.of("Asia/Kolkata")).toLocalDateTime().toString();
             }
-
-            byte[] content = blob.getContent();
-            String fileContent = new String(content, StandardCharsets.UTF_8);
-
-            modFiles = Arrays.stream(fileContent.split("\n"))
-                    .map(path -> {
-                        String fileName = path.substring(path.lastIndexOf("/") + 1);
-                        return fileName.replaceAll("\\.jar$", "");
-                    })
-                    .toList();
-            updatedAt = Instant.ofEpochMilli(blob.getUpdateTime()).atZone(ZoneId.of("Asia/Kolkata")).toLocalDateTime().toString(); // we can rely on this
 
         } catch (StorageException e) {
             logger.info("GCS error :: {}", e.getMessage());
