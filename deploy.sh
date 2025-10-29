@@ -76,7 +76,7 @@ echo -e "${GREEN}All required variables are set!${NC}"
 
 # --- Build and Push Docker Image ---
 #
-export SERVICE_ACCOUNT="cloud-run-sa@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
+export SERVICE_ACCOUNT="admin-64s23f@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
 export IMAGE_NAME="${GOOGLE_CLOUD_VM_REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${GOOGLE_CLOUD_AR_REPO_NAME}/${GOOGLE_CLOUD_CR_SERVICE_NAME}:latest"
 
 echo -e "${CYAN}--- Configuration ---${NC}"
@@ -84,10 +84,23 @@ echo "Service Account: ${SERVICE_ACCOUNT}"
 echo "Image Name:      ${IMAGE_NAME}"
 echo -e "${CYAN}-------------------${NC}"
 
+gcloud artifacts repositories describe "${GOOGLE_CLOUD_AR_REPO_NAME}" \
+  --project="${GOOGLE_CLOUD_PROJECT}" \
+  --location="${GOOGLE_CLOUD_VM_REGION}" || \
+(
+  echo "Repository '${GOOGLE_CLOUD_AR_REPO_NAME}' not found. Creating it..."
+  gcloud artifacts repositories create "${GOOGLE_CLOUD_AR_REPO_NAME}" \
+    --project="${GOOGLE_CLOUD_PROJECT}" \
+    --repository-format=docker \
+    --location="${GOOGLE_CLOUD_VM_REGION}" \
+    --description="Docker repository for the Validator App" \
+    --quiet
+)
+echo -e "${GREEN}Artifact Registry repository is ready.${NC}"
+
 echo "4. Authenticating with Google Cloud..."
 gcloud auth configure-docker "${GOOGLE_CLOUD_VM_REGION}-docker.pkg.dev" --quiet
 
-echo "5. Building Docker image..."
 docker build \
   --build-arg GOOGLE_CLOUD_FIREWALL_NAME="$GOOGLE_CLOUD_FIREWALL_NAME" \
   --build-arg GOOGLE_CLOUD_PROJECT="$GOOGLE_CLOUD_PROJECT" \
