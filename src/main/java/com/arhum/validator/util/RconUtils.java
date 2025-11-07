@@ -1,5 +1,6 @@
 package com.arhum.validator.util;
 
+import com.arhum.validator.config.RconClient;
 import com.arhum.validator.model.RconPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +19,9 @@ public class RconUtils {
     private static final int PACKET_TYPE_COMMAND = 2;
     private static final int PACKET_TYPE_INVALID_AUTH_RESPONSE = -1;
     private static final int SENTINEL_REQUEST_TYPE = 200; // suggested by the protocol spec to detect the end of a fragmented response
-    private final AtomicInteger requestIdGenerator = new AtomicInteger(0);
+    private static final AtomicInteger requestIdGenerator = new AtomicInteger(0);
 
-    private int sendPacket(int type, String payload, OutputStream outputStream) throws IOException {
+    private static int sendPacket(int type, String payload, RconClient rconClient) throws IOException {
         int requestId = requestIdGenerator.incrementAndGet();
         byte[] payloadBytes = payload.getBytes(RconPacket.CHARSET);
 
@@ -36,14 +37,14 @@ public class RconUtils {
         buffer.put((byte) 0x00); // Null-terminated payload
         buffer.put((byte) 0x00); // 1-byte pad
 
-        outputStream.write(buffer.array());
-        outputStream.flush();
+        rconClient.socket.getOutputStream().write(buffer.array());
+        rconClient.socket.getOutputStream().flush();
 
         return requestId;
     }
 
-    private RconPacket readPacket(InputStream inputStream) throws IOException {
-        byte[] lengthBytes = inputStream.readNBytes(4); // read packet length (first 4 bytes)
+    private static RconPacket readPacket(RconClient client) throws IOException {
+        byte[] lengthBytes = client.socket.getInputStream().readNBytes(4); // read packet length (first 4 bytes)
 
         if (lengthBytes.length < 4) {
             throw new IOException("Connection closed while reading packet length.");
@@ -51,7 +52,7 @@ public class RconUtils {
 
         int packetLength = ByteBuffer.wrap(lengthBytes).order(ByteOrder.LITTLE_ENDIAN).getInt();
 
-        byte[] packetData = inputStream.readNBytes(packetLength);
+        byte[] packetData = client.socket.getInputStream().readNBytes(packetLength);
         if (packetData.length < packetLength) {
             throw new IOException("Connection closed while reading packet data.");
         }
@@ -80,9 +81,9 @@ public class RconUtils {
      * @param password The RCON password.
      * @throws IOException if a network error occurs.
      */
-    public Boolean authenticate(String password, InputStream inputStream, OutputStream outputStream) throws IOException {
-        int requestId = sendPacket(PACKET_TYPE_LOGIN, password, outputStream);
-        RconPacket response = readPacket(inputStream);
+    public static Boolean authenticate(String password, RconClient client) throws IOException {
+        int requestId = sendPacket(PACKET_TYPE_LOGIN, password, client);
+        RconPacket response = readPacket(client);
 
         // response can be either -1 or same (failure, success respectively)
         // added a sanity check if-branch. it should NOT reach at least as per specs
@@ -116,14 +117,14 @@ public class RconUtils {
      * @return The server's response to the command.
      * @throws IOException if a network error occurs.
      */
-    public String executeCommand(String command, InputStream inputStream, OutputStream outputStream) throws IOException {
+    public static String executeCommand(String command, RconClient client) throws IOException {
         // we first send the actual command, then a dummy
-        int mainRequestId = sendPacket(PACKET_TYPE_COMMAND, command, outputStream);
-        int sentinelRequestId = sendPacket(SENTINEL_REQUEST_TYPE, "", outputStream);
+        int mainRequestId = sendPacket(PACKET_TYPE_COMMAND, command, client);
+        int sentinelRequestId = sendPacket(SENTINEL_REQUEST_TYPE, "", client);
 
         StringBuilder responseBody = new StringBuilder();
         while (true) {
-            RconPacket response = readPacket(inputStream);
+            RconPacket response = readPacket(client);
             if (response.getRequestId() == mainRequestId) {
                 // This is part of our main command's response. Append it.
                 responseBody.append(response.getBody());

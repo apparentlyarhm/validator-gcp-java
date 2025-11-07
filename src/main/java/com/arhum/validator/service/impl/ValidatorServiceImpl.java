@@ -7,6 +7,7 @@ import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.response.*;
 import com.arhum.validator.service.contract.ValidatorService;
 import com.arhum.validator.util.GeneralUtils;
+import com.arhum.validator.util.RconUtils;
 import com.google.cloud.compute.v1.*;
 import com.google.cloud.storage.*;
 import lombok.SneakyThrows;
@@ -29,6 +30,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.arhum.validator.util.RconUtils.authenticate;
+import static com.arhum.validator.util.RconUtils.executeCommand;
 import static com.arhum.validator.util.SocketUtils.*;
 
 @Service
@@ -58,6 +61,9 @@ public class ValidatorServiceImpl implements ValidatorService {
 
     @Value("${rcon.port}")
     private String rconPort;
+
+    @Value("${rcon.pass}")
+    private String rconPass;
 
     @Autowired
     private FirewallsClient firewallsClient;
@@ -252,9 +258,18 @@ public class ValidatorServiceImpl implements ValidatorService {
     }
     @Override
     public CommonResponse executeRcon(String address) throws IOException {
+        String res = "";
+
         try (RconClient client = new RconClient(address, Integer.parseInt(rconPort))){
-            return new CommonResponse("test");
+
+            if (authenticate(rconPass, client)){
+               res = executeCommand("time set night", client);
+            } else {
+                logger.info("did not pass authentication");
+            }
+
         }
+        return new CommonResponse(res);
     }
 
     @Override
