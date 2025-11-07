@@ -259,17 +259,10 @@ public class ValidatorServiceImpl implements ValidatorService {
     @Override
     public CommonResponse executeRcon(String address) throws IOException {
         String res = "";
-
-        try (RconClient client = new RconClient(address, Integer.parseInt(rconPort))){
-
-            if (authenticate(rconPass, client)){
-               res = executeCommand("time set night", client);
-            } else {
-                logger.info("did not pass authentication");
-            }
-
+        try (RconClient client = new RconClient(address, Integer.parseInt(rconPort), rconPass)){
+            res = executeCommand("time set day", client);
+            return new CommonResponse(res);
         }
-        return new CommonResponse(res);
     }
 
     @Override

@@ -8,24 +8,26 @@ public enum RconCommands {
     KICK("kick %s", true),
     BAN("ban %s", true),
     PARDON("pardon %s", true),
+    TIME_SET("time set %s", true),
+    WEATHER_SET("weather %s", true),
+    TELEPORT("tp %s %s", true), // player1 player2
+    STOP("stop", true),
+
+    // might support these later
     WHITELIST_ADD("whitelist add %s", false),
     WHITELIST_REMOVE("whitelist remove %s", false),
     WHITELIST_RELOAD("whitelist reload", false),
-    TIME_SET("time set %s", true),
-    WEATHER_SET("weather %s", true),
-    GIVE("give %s %s %s", false), // pain in the ass so not gonna support for now
-    TELEPORT("tp %s %s", true), // player1 player2
-    STOP("stop", true);
+    GIVE("give %s %s %s", false);
 
     @Getter
     private final String commandFormat;
 
     @Getter
-    private final Boolean isSupported;
+    private final Boolean isEnabled;
 
-    RconCommands(String command, Boolean isSupported) {
+    RconCommands(String command, Boolean isEnabled) {
         this.commandFormat = command;
-        this.isSupported = isSupported;
+        this.isEnabled = isEnabled;
     }
     public String format(Object... args) {
         return String.format(this.commandFormat, args);

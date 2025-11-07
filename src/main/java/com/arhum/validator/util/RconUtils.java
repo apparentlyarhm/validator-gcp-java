@@ -6,8 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -78,11 +76,11 @@ public class RconUtils {
     /**
      * Authenticates the client with the RCON server.
      *
-     * @param password The RCON password.
+     * @param client The RCON client instance.
      * @throws IOException if a network error occurs.
      */
-    public static Boolean authenticate(String password, RconClient client) throws IOException {
-        int requestId = sendPacket(PACKET_TYPE_LOGIN, password, client);
+    public static Boolean authenticate(RconClient client) throws IOException {
+        int requestId = sendPacket(PACKET_TYPE_LOGIN, client.getPassword(), client);
         RconPacket response = readPacket(client);
 
         // response can be either -1 or same (failure, success respectively)
@@ -96,48 +94,59 @@ public class RconUtils {
             logger.info("wow this should NOT happen, received different request id");
             return false;
         }
+        logger.info("RCON password is correct..");
         return true;
     }
 
     /**
-     * Executes a command and handles potentially fragmented responses.
-     * This implementation uses the "sentinel packet" method for reliability.
+     * Executes a RCON command and returns response.
      * <p>
-     * The Minecraft server can fragment responses across multiple packets. There's no simple way to know when the last response packet has been received; approaches include:
-     * <p>
-     * - Wait until we receive a packet with a payload length < 4096 (not 100% reliable!)
-     * - Wait for n seconds
-     * - Send two command packets; the second command triggers a response from the server with the same Request ID,
-     *   and from this we know that we've already received the full response to the first command.
-     *   The second packet should use a command that will not produce fragmented output
-     *   An alternative is for the second C->S packet to use an invalid type (say, 200); the server will respond
-     *   with a 'Command response' packet with its payload set to 'Unknown request c8'. (200 in hexadecimal)
+     * The Minecraft server can fragment responses across multiple packets. There's no simple
+     * way to know when the last response packet has been received; approaches include:
      *
+     * <li>Wait until we receive a packet with a payload length < 4096 (not 100% reliable!)</li>
+     * <li>Wait for n seconds</li>
+     * <li><b>[We are using this]</b> Send two command packets; the second command triggers a response
+     *   from the server with the same Request ID, and from this we know that we've already received
+     *   the full response to the first command. The second packet should use a command that will not produce
+     *   fragmented output.</li>
+     *
+     * <br>
+     * <a href='https://minecraft.wiki/w/RCON'>See more</a>
      * @param command The command to execute.
+     * @param client The RCON client instance
      * @return The server's response to the command.
-     * @throws IOException if a network error occurs.
+     * @throws IOException if a network error occurs or if password is wrong.
      */
     public static String executeCommand(String command, RconClient client) throws IOException {
-        // we first send the actual command, then a dummy
-        int mainRequestId = sendPacket(PACKET_TYPE_COMMAND, command, client);
-        int sentinelRequestId = sendPacket(SENTINEL_REQUEST_TYPE, "", client);
 
-        StringBuilder responseBody = new StringBuilder();
-        while (true) {
-            RconPacket response = readPacket(client);
-            if (response.getRequestId() == mainRequestId) {
-                // This is part of our main command's response. Append it.
-                responseBody.append(response.getBody());
+        if (authenticate(client)) {
+            // we first send the actual command, then a dummy
+            int mainRequestId = sendPacket(PACKET_TYPE_COMMAND, command, client);
+            int sentinelRequestId = sendPacket(SENTINEL_REQUEST_TYPE, "", client);
 
-            } else if (response.getRequestId() == sentinelRequestId) {
-                // We received the reply to our sentinel packet, which means the
-                // main response is complete. We can stop listening.
-                break;
-            } else {
-                // we should not reach here
-                logger.info("Warning: Received packet with unexpected ID: {}", response.getRequestId());
+            StringBuilder responseBody = new StringBuilder();
+            while (true) {
+                RconPacket response = readPacket(client);
+
+                if (response.getRequestId() == mainRequestId) {
+                    // This is part of our main command's response. Append it.
+                    responseBody.append(response.getBody());
+
+                } else if (response.getRequestId() == sentinelRequestId) {
+                    // We received the reply to our sentinel packet, which means the
+                    // main response is complete. We can stop listening.
+                    break;
+
+                } else {
+                    // we should not reach here
+                    logger.info("Warning: Received packet with unexpected ID: {}", response.getRequestId());
+                    throw new IOException("req id mismatch: aborting..");
+                }
             }
+            return responseBody.toString();
         }
-        return responseBody.toString();
+
+        throw new IOException("Authentication has failed");
     }
 }
