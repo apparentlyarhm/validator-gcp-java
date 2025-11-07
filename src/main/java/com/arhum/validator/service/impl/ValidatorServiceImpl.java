@@ -258,18 +258,17 @@ public class ValidatorServiceImpl implements ValidatorService {
     }
     @Override
     public CommonResponse executeRcon(String address, RconRequest request) throws IOException {
-        RconCommands commandEnum = request.getCommand();
-
-        if (!commandEnum.getIsEnabled()) {
-            throw new UnsupportedOperationException("Command '" + commandEnum.name() + "' is not enabled.");
-        }
-
-        String finalCommand = commandEnum.format(request.getArguments().toArray());
+        String res;
         try (RconClient client = new RconClient(address, Integer.parseInt(rconPort), rconPass)){
-            String res;
-//            res = executeCommand(finalCommand, client);
+            RconCommands commandEnum = request.getCommand();
 
-            res = finalCommand;
+            if (!commandEnum.getIsEnabled()) {
+                throw new UnsupportedOperationException("Command '" + commandEnum.name() + "' is not enabled.");
+            }
+
+            String finalCommand = commandEnum.format(request.getArguments().toArray());
+            res = executeCommand(finalCommand, client);
+
             return new CommonResponse(res);
         }
         // IOException in case of errors will be thrown by internal methods
