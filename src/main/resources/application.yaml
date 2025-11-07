@@ -18,6 +18,7 @@ auth:
       /api/v2/firewall/check-ip,
       /api/v2/server-info,
       /api/v2/mods/**,
+      /api/v2/**,
       /misc/**
     signing-secret: ${SIGNING_SECRET}
 
@@ -41,11 +42,11 @@ google:
     filename: modlist.txt
 
 minecraft-server:
-  port: { MINECRAFT_SERVER_PORT }
+  port: ${MINECRAFT_SERVER_PORT}
 
 rcon:
-  port: { MINECRAFT_RCON_PORT }
-  pass: { MINECRAFT_RCON_PASS }
+  port: ${MINECRAFT_RCON_PORT}
+  pass: ${MINECRAFT_RCON_PASS}
 
 github:
   client_id: ${GITHUB_CLIENT_ID}
