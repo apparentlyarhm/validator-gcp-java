@@ -76,7 +76,14 @@ public class MainController {
 
     @GetMapping(value = "/mods", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get current Modlist of the minecraft server")
-    public ModListResponse getMods() throws BaseException {
+    public ModListResponse getMods(@RequestParam String address) throws BaseException {
         return validatorService.getModList();
     }
+
+    @PostMapping(value = "/execute", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Execute commands via RCON")
+    public CommonResponse execute(@RequestParam String address) throws IOException {
+        return validatorService.executeRcon(address);
+    }
+
 }

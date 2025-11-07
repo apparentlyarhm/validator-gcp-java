@@ -1,5 +1,6 @@
 package com.arhum.validator.service.impl;
 
+import com.arhum.validator.config.RconClient;
 import com.arhum.validator.exception.*;
 import com.arhum.validator.model.enums.IpStatus;
 import com.arhum.validator.model.request.AddressAddRequest;
@@ -54,6 +55,9 @@ public class ValidatorServiceImpl implements ValidatorService {
 
     @Value("${google.storage.filename}")
     private String fileName;
+
+    @Value("${rcon.port}")
+    private String rconPort;
 
     @Autowired
     private FirewallsClient firewallsClient;
@@ -246,6 +250,12 @@ public class ValidatorServiceImpl implements ValidatorService {
             return new MOTDResponse(parseFullQueryResponse(fullResponsePacket.getData()));
         }
     }
+    @Override
+    public CommonResponse executeRcon(String address) throws IOException {
+        try (RconClient client = new RconClient(address, Integer.parseInt(rconPort))){
+            return new CommonResponse("test");
+        }
+    }
 
     @Override
     public ModListResponse getModList() throws BaseException {
@@ -320,4 +330,5 @@ public class ValidatorServiceImpl implements ValidatorService {
             throw new InternalServerException("Something went wrong", 500);
         }
     }
+
 }

@@ -25,4 +25,6 @@ public interface ValidatorService {
     ModListResponse getModList() throws BaseException;
 
     CommonResponse download(String object) throws BaseException;
+
+    CommonResponse executeRcon(String address) throws IOException;
 }
