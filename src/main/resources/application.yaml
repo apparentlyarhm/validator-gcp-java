@@ -43,6 +43,10 @@ google:
 minecraft-server:
   port: { MINECRAFT_SERVER_PORT }
 
+rcon:
+  port: { MINECRAFT_RCON_PORT }
+  pass: { MINECRAFT_RCON_PASS }
+
 github:
   client_id: ${GITHUB_CLIENT_ID}
   client_secret: ${GITHUB_CLIENT_SECRET}
