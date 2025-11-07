@@ -1,7 +1,7 @@
 package com.arhum.validator.util;
 
 import com.arhum.validator.config.RconClient;
-import com.arhum.validator.model.RconPacket;
+import com.arhum.validator.model.rcon.RconPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +79,7 @@ public class RconUtils {
      * @param client The RCON client instance.
      * @throws IOException if a network error occurs.
      */
-    public static Boolean authenticate(RconClient client) throws IOException {
+    private static Boolean authenticate(RconClient client) throws IOException {
         int requestId = sendPacket(PACKET_TYPE_LOGIN, client.getPassword(), client);
         RconPacket response = readPacket(client);
 

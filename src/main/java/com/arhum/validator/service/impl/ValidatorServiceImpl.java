@@ -3,11 +3,12 @@ package com.arhum.validator.service.impl;
 import com.arhum.validator.config.RconClient;
 import com.arhum.validator.exception.*;
 import com.arhum.validator.model.enums.IpStatus;
+import com.arhum.validator.model.enums.RconCommands;
+import com.arhum.validator.model.rcon.RconRequest;
 import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.response.*;
 import com.arhum.validator.service.contract.ValidatorService;
 import com.arhum.validator.util.GeneralUtils;
-import com.arhum.validator.util.RconUtils;
 import com.google.cloud.compute.v1.*;
 import com.google.cloud.storage.*;
 import lombok.SneakyThrows;
@@ -30,8 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.arhum.validator.util.RconUtils.authenticate;
-import static com.arhum.validator.util.RconUtils.executeCommand;
+    import static com.arhum.validator.util.RconUtils.executeCommand;
 import static com.arhum.validator.util.SocketUtils.*;
 
 @Service
@@ -257,12 +257,22 @@ public class ValidatorServiceImpl implements ValidatorService {
         }
     }
     @Override
-    public CommonResponse executeRcon(String address) throws IOException {
-        String res = "";
+    public CommonResponse executeRcon(String address, RconRequest request) throws IOException {
+        RconCommands commandEnum = request.getCommand();
+
+        if (!commandEnum.getIsEnabled()) {
+            throw new UnsupportedOperationException("Command '" + commandEnum.name() + "' is not enabled.");
+        }
+
+        String finalCommand = commandEnum.format(request.getArguments().toArray());
         try (RconClient client = new RconClient(address, Integer.parseInt(rconPort), rconPass)){
-            res = executeCommand("time set day", client);
+            String res;
+//            res = executeCommand(finalCommand, client);
+
+            res = finalCommand;
             return new CommonResponse(res);
         }
+        // IOException in case of errors will be thrown by internal methods
     }
 
     @Override

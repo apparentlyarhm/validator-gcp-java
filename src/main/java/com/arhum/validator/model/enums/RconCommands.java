@@ -4,13 +4,17 @@ import lombok.Getter;
 
 public enum RconCommands {
 
+    // player related
     SAY("say %s", true),
     KICK("kick %s", true),
     BAN("ban %s", true),
     PARDON("pardon %s", true),
+    TELEPORT("tp %s %s", true), // player1 player2
+
+    // other
     TIME_SET("time set %s", true),
     WEATHER_SET("weather %s", true),
-    TELEPORT("tp %s %s", true), // player1 player2
+
     STOP("stop", true),
 
     // might support these later

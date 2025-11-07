@@ -4,6 +4,7 @@ import com.google.api.gax.rpc.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -62,6 +63,13 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleUnsupportedOperationException(UnsupportedOperationException ex) {
         log.error("UnsupportedOperationException occurred :: {}", ex.getMessage());
         return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal Server Error");
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleDeserialIssues(HttpMessageNotReadableException ex) {
+        log.error("HttpMessageNotReadableException occurred :: {}", ex.getMessage());
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Check request");
     }
 
 }

@@ -1,6 +1,7 @@
 package com.arhum.validator.service.contract;
 
 import com.arhum.validator.exception.BaseException;
+import com.arhum.validator.model.rcon.RconRequest;
 import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.response.*;
 
@@ -26,5 +27,5 @@ public interface ValidatorService {
 
     CommonResponse download(String object) throws BaseException;
 
-    CommonResponse executeRcon(String address) throws IOException;
+    CommonResponse executeRcon(String address, RconRequest request) throws IOException;
 }

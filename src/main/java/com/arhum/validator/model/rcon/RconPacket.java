@@ -1,4 +1,4 @@
-package com.arhum.validator.model;
+package com.arhum.validator.model.rcon;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

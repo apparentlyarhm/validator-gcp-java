@@ -1,6 +1,7 @@
 package com.arhum.validator.controller;
 
 import com.arhum.validator.exception.BaseException;
+import com.arhum.validator.model.rcon.RconRequest;
 import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.response.*;
 import com.arhum.validator.service.contract.ValidatorService;
@@ -82,8 +83,8 @@ public class MainController {
 
     @PostMapping(value = "/execute", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Execute commands via RCON")
-    public CommonResponse execute(@RequestParam String address) throws IOException {
-        return validatorService.executeRcon(address);
+    public CommonResponse execute(@RequestParam String address, @RequestBody @Valid RconRequest request) throws IOException {
+        return validatorService.executeRcon(address, request);
     }
 
 }
