@@ -72,4 +72,10 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Check request");
     }
 
+    @ExceptionHandler(AssertionError.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleAssertions(AssertionError ex) {
+        log.error("Assertion failed :: {}", ex.getMessage());
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Check request");
+    }
 }

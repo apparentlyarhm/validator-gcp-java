@@ -266,8 +266,15 @@ public class ValidatorServiceImpl implements ValidatorService {
                 throw new UnsupportedOperationException("Command '" + commandEnum.name() + "' is not enabled.");
             }
 
-            String finalCommand = commandEnum.format(request.getArguments().toArray());
-            res = executeCommand(finalCommand, client);
+            if (commandEnum == RconCommands.CUSTOM) {
+                logger.info("{}", request.getArguments().size());
+                assert request.getArguments().size() <= 1 : "The first argument should house the entire command";
+                res = executeCommand(request.getArguments().get(0), client);
+
+            } else {
+                String finalCommand = commandEnum.format(request.getArguments().toArray());
+                res = executeCommand(finalCommand, client);
+            }
 
             return new CommonResponse(res);
         }

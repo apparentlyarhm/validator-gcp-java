@@ -15,6 +15,7 @@ public enum RconCommands {
     TIME_SET("time set %s", true),
     WEATHER_SET("weather %s", true),
     STOP("stop", true),
+    CUSTOM("custom command can have anything", true),
 
     // might support these later
     WHITELIST_ADD("whitelist add %s", false),
