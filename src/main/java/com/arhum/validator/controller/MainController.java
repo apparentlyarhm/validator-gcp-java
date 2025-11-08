@@ -77,7 +77,7 @@ public class MainController {
 
     @GetMapping(value = "/mods", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get current Modlist of the minecraft server")
-    public ModListResponse getMods(@RequestParam String address) throws BaseException {
+    public ModListResponse getMods() throws BaseException {
         return validatorService.getModList();
     }
 
