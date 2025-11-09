@@ -55,7 +55,6 @@ rcon:
 github:
   client_id: ${GITHUB_CLIENT_ID}
   client_secret: ${GITHUB_CLIENT_SECRET}
-  authorized-email: ${GITHUB_AUTH_EMAIL}
 
 logging:
   com:

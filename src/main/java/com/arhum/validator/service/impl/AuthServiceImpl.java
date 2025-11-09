@@ -40,9 +40,6 @@ public class AuthServiceImpl  implements AuthService {
     @Value("${console.host}")
     private String frontendHost;
 
-    @Value("${github.authorized-email}")
-    private String authorizedEmail;
-
     @Value("${auth.security.signing-secret}")
     private String jwtSecret;
 
