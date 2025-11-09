@@ -78,4 +78,11 @@ public class GlobalExceptionHandler {
         log.error("Assertion failed :: {}", ex.getMessage());
         return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Check request");
     }
+
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleForbidden(ForbiddenException ex){
+        log.error("Not allowed to do action :: {}", ex.getMessage());
+        return new ErrorResponse(HttpStatus.FORBIDDEN.value(), ex.getMessage());
+    }
 }
