@@ -126,26 +126,6 @@ docker push "$IMAGE_NAME"
 # --- Deploy to Cloud Run ---
 #
 echo "7. Deploying to Google Cloud Run..."
-
-# Construct the environment variables string for Cloud Run
-# Using '^##^' as a delimiter is a robust trick to handle values that might contain commas
-ENV_VARS_STRING=$(cat <<EOF
-^##^FE_HOST=${FE_HOST}
-^##^SIGNING_SECRET=${SIGNING_SECRET}
-^##^GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
-^##^GOOGLE_CLOUD_VM_ZONE=${GOOGLE_CLOUD_VM_ZONE}
-^##^GOOGLE_CLOUD_VM_NAME=${GOOGLE_CLOUD_VM_NAME}
-^##^GOOGLE_CLOUD_FIREWALL_NAME=${GOOGLE_CLOUD_FIREWALL_NAME}
-^##^MINECRAFT_SERVER_PORT=${MINECRAFT_SERVER_PORT}
-^##^MINECRAFT_RCON_PORT=${MINECRAFT_RCON_PORT}
-^##^MINECRAFT_RCON_PASS=${MINECRAFT_RCON_PASS}
-^##^GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
-^##^GOOGLE_CLOUD_BUCKET_NAME=${GOOGLE_CLOUD_BUCKET_NAME}
-^##^GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
-^##^GITHUB_AUTH_EMAIL=${GITHUB_AUTH_EMAIL}
-EOF
-)
-
 gcloud run deploy "$GOOGLE_CLOUD_CR_SERVICE_NAME" \
   --image="$IMAGE_NAME" \
   --platform=managed \
@@ -154,19 +134,3 @@ gcloud run deploy "$GOOGLE_CLOUD_CR_SERVICE_NAME" \
   --allow-unauthenticated \
 
 echo -e "${GREEN}Deployment to Cloud Run completed!${NC}"
-
-
-# --- Post-Deployment: Update GitHub Secret ---
-#
-echo "8. Fetching Cloud Run service URL..."
-SERVICE_URL=$(gcloud run services describe "$GOOGLE_CLOUD_CR_SERVICE_NAME" --platform=managed --region="$GOOGLE_CLOUD_VM_REGION" --project="$GOOGLE_CLOUD_PROJECT" --format="value(status.url)")
-
-# Use the GITHUB_REPOSITORY variable provided by GitHub Actions for portability
-# When running locally, you might need to set this yourself: export GITHUB_REPOSITORY="your_user/your_repo"
-TARGET_REPO="${GITHUB_REPOSITORY:-apparentlyarhm/minecraft-vm-management-console}"
-
-# Use '--body' flag for gh cli for robustness
-echo "9. Updating GitHub repository secret 'CLOUD_RUN_SERVICE_URL' for repo: ${TARGET_REPO}..."
-echo "$SERVICE_URL" | gh secret set CLOUD_RUN_SERVICE_URL --repo "$TARGET_REPO"
-
-echo -e "${GREEN}--- CI/CD Script Finished Successfully ---${NC}"
