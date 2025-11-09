@@ -38,10 +38,8 @@ public class GlobalRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        logger.info("headers :: {}", request.getHeaderNames());
         if (Objects.nonNull(authHeader) && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            logger.info("TOKEN FOUND :: {}", token);
 
             try {
                 Claims claims = Jwts.parser()

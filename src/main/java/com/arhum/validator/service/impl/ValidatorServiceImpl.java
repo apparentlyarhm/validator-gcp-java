@@ -1,9 +1,11 @@
 package com.arhum.validator.service.impl;
 
+import com.arhum.validator.config.GlobalConfig;
 import com.arhum.validator.config.RconClient;
 import com.arhum.validator.exception.*;
 import com.arhum.validator.model.enums.IpStatus;
 import com.arhum.validator.model.enums.RconCommands;
+import com.arhum.validator.model.enums.Role;
 import com.arhum.validator.model.rcon.RconRequest;
 import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.response.*;
@@ -16,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -259,11 +263,30 @@ public class ValidatorServiceImpl implements ValidatorService {
     @Override
     public CommonResponse executeRcon(String address, RconRequest request) throws IOException {
         String res;
+
+        boolean isAdmin = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .stream()
+                .anyMatch(grantedAuthority -> grantedAuthority
+                        .getAuthority()
+                        .equals(String.valueOf(Role.ROLE_ADMIN)
+                        )
+                );
+
         try (RconClient client = new RconClient(address, Integer.parseInt(rconPort), rconPass)){
             RconCommands commandEnum = request.getCommand();
 
             if (!commandEnum.getIsEnabled()) {
                 throw new UnsupportedOperationException("Command '" + commandEnum.name() + "' is not enabled.");
+            }
+
+            if (commandEnum.getIsAdmin()) {
+                // if the command is admin, the user must also be admin
+                if (!isAdmin) {
+                    throw new ForbiddenException("Only admins can use this command", 403);
+                }
             }
 
             if (commandEnum == RconCommands.CUSTOM) {
