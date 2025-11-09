@@ -9,20 +9,26 @@ services:
         IMAGE_NAME: ${IMAGE_NAME}
       dockerfile: Dockerfile
     image: ${IMAGE_NAME}
+    env_file:
+      - .env
     environment:
       - GOOGLE_CLOUD_FIREWALL_NAME=${GOOGLE_CLOUD_FIREWALL_NAME}
       - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
       - GOOGLE_CLOUD_VM_NAME=${GOOGLE_CLOUD_VM_NAME}
       - GOOGLE_CLOUD_VM_ZONE=${GOOGLE_CLOUD_VM_ZONE}
       - MINECRAFT_SERVER_PORT=${MINECRAFT_SERVER_PORT}
-      # new
-      - FE_HOST=${FE_HOST:-http://localhost:3000} # Added default value
+      - MINECRAFT_RCON_PORT=${MINECRAFT_RCON_PORT}
+      - MINECRAFT_RCON_PASS=${MINECRAFT_RCON_PASS}
+      - FE_HOST=${FE_HOST:-http://localhost:3000}
       - SIGNING_SECRET=${SIGNING_SECRET}
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
       - GITHUB_CLIENT_REDIRECT_URI=${GITHUB_CLIENT_REDIRECT_URI}
       - GITHUB_AUTH_EMAIL=${GITHUB_AUTH_EMAIL}
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/creds.json # this is merely a reference from my pc. the files are not there. Googles software automatically picks values of this env
     ports:
       - "8080:8080"
+    volumes:
+      - ~/Downloads:/root/.config/gcloud:ro # this will help us to use local creds file for ADC
     restart: unless-stopped
 
