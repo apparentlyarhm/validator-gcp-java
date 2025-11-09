@@ -1,5 +1,6 @@
 package com.arhum.validator.service.impl;
 
+import com.arhum.validator.config.GlobalConfig;
 import com.arhum.validator.exception.BaseException;
 import com.arhum.validator.exception.InternalServerException;
 import com.arhum.validator.model.enums.Role;
@@ -48,6 +49,9 @@ public class AuthServiceImpl  implements AuthService {
     @Autowired
     private WebClient webClient;
 
+    @Autowired
+    private GlobalConfig globalConfig;
+
     @Override
     public CommonResponse getGitHubLoginUrl() {
         String red = frontendHost + "/callback";
@@ -75,7 +79,7 @@ public class AuthServiceImpl  implements AuthService {
 
         String email = (String) userInfo.get("email");
         String id = (String) userInfo.get("login");
-        String role = authorizedEmail.equals(email) ? String.valueOf(Role.ROLE_ADMIN) : String.valueOf(Role.ROLE_USER);
+        String role = globalConfig.getRole(email).toString();
 
         String jwt = Jwts.builder()
                 .setSubject("github|" + id)

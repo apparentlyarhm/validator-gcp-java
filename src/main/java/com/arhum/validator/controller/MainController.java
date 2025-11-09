@@ -81,7 +81,7 @@ public class MainController {
         return validatorService.getModList();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @PostMapping(value = "/execute", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Execute commands via RCON")
     public CommonResponse execute(@RequestParam String address, @RequestBody @Valid RconRequest request) throws IOException {
