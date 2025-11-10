@@ -76,11 +76,13 @@ public class AuthServiceImpl  implements AuthService {
 
         String email = (String) userInfo.get("email");
         String id = (String) userInfo.get("login");
-        String role = globalConfig.getRole(email).toString();
+        String uid = ((Integer) userInfo.get("id")).toString();
+        String role = globalConfig.getRole(uid).toString();
 
         String jwt = Jwts.builder()
                 .setSubject("github|" + id)
                 .claim("email", email)
+                .claim("id", uid)
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(Date.from(Instant.now().plus(1, ChronoUnit.HOURS)))
@@ -88,7 +90,7 @@ public class AuthServiceImpl  implements AuthService {
                 .compact();
 
         LoginResponse response = new LoginResponse();
-        response.setId(id);
+        response.setId(id); // This is NOT the unique id, but the username
         response.setEmail(email);
         response.setToken(jwt);
 

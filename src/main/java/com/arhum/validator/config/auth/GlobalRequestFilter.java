@@ -49,11 +49,13 @@ public class GlobalRequestFilter extends OncePerRequestFilter {
                         .getBody();
 
                 String email = claims.get("email", String.class);
+                String id = claims.get("id", String.class);
                 String role = claims.get("role", String.class);
 
-                logger.info("Extracted user: {}, role: {}", email, role);
+                logger.info("Extracted user: email {}, role: {}, id: {}", email, role, id);
 
-                if (email != null && role != null) {
+                if (id != null && role != null) {
+                    // we dont care if email is null.
                     List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role.toUpperCase()));
                     Authentication auth = new UsernamePasswordAuthenticationToken(email, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(auth);

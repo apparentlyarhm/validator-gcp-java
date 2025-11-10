@@ -21,10 +21,10 @@ auth:
       /api/v2/**,
       /misc/**
     signing-secret: ${SIGNING_SECRET}
-    admin-emails:
-      mohd.arhum28@gmail.com
-    user-emails:
-      aryanadiverma@gmail.com
+    admin-ids:
+      169424843
+    user-ids:
+      103031918
 
 springdoc: # http://localhost:8080/misc/swagger-ui/index.html
   api-docs:
