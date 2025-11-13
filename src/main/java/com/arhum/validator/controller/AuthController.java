@@ -18,7 +18,6 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-
     @GetMapping("/login")
     @Operation(description = "Initiate the login via GitHub, this just generates the link using clientID")
     public CommonResponse login() {
