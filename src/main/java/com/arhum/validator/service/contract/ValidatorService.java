@@ -17,6 +17,8 @@ public interface ValidatorService {
 
     CommonResponse purgeFirewall() throws BaseException;
 
+    CommonResponse allowPublicAccess() throws BaseException;
+
     InstanceDetailResponse getMachineDetails() throws BaseException;
 
     FirewallRuleResponse getFirewallDetails() throws BaseException;

@@ -171,6 +171,39 @@ public class ValidatorServiceImpl implements ValidatorService {
         return new CommonResponse("Done");
     }
 
+    @SneakyThrows
+    @Override
+    public CommonResponse allowPublicAccess() throws BaseException {
+        Firewall firewall = firewallsClient.get(projectId, firewallName);
+        List<String> newSourceIpList = new ArrayList<>(firewall.getSourceRangesList());
+
+        if (newSourceIpList.isEmpty()) {
+            throw new BadRequestException("Allowed list is already empty!", 400);
+        }
+        newSourceIpList.clear(); // cleanup all addresses
+        newSourceIpList.add("0.0.0.0/0"); // denotes any ip
+
+        Firewall newFirewallState = firewall.toBuilder()
+                .clearSourceRanges()
+                .addAllSourceRanges(newSourceIpList)
+                .build();
+
+        PatchFirewallRequest patchRequest = PatchFirewallRequest.newBuilder()
+                .setFirewall(firewallName)
+                .setProject(projectId)
+                .setFirewallResource(newFirewallState)
+                .build();
+
+        // Execute patch
+        Operation operation = firewallsClient.patchAsync(patchRequest).get();
+
+        // Optional: check operation status
+        if (operation.hasError()) {
+            throw new InternalServerException("Failed to patch firewall: " + operation.getError(), 500);
+        }
+        return new CommonResponse("Done");
+    }
+
     @Override
     public CommonResponse isIpPresent(String ip) throws BaseException {
         String target = ip + "/32";  // a singular IPv4 will always have /32 suffix.

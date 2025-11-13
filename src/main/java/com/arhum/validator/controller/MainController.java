@@ -63,6 +63,13 @@ public class MainController {
         return validatorService.purgeFirewall();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping(value = "/firewall/make-public", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Allows any ip to access the vm")
+    public CommonResponse makePublic() throws BaseException {
+        return validatorService.allowPublicAccess();
+    }
+
     @GetMapping(value = "/mods/download/{fileName}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Downloads a mod by filename, if it exists")
     public CommonResponse download(@PathVariable String fileName) throws BaseException {
