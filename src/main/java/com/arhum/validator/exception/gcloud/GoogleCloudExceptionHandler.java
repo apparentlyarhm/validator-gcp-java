@@ -1,6 +1,5 @@
 package com.arhum.validator.exception.gcloud;
 
-import com.arhum.validator.exception.ErrorResponse;
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.StatusCode;
 import org.slf4j.Logger;
@@ -11,8 +10,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 @ControllerAdvice
 public class GoogleCloudExceptionHandler {
@@ -32,6 +31,37 @@ public class GoogleCloudExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(response); // have to be very generic to the client
+    }
+
+    // handling it here because none of my logic throws these.
+    @ExceptionHandler(ExecutionException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<Map<String, Object>> handleExecutionException(ExecutionException ex) {
+        log.info("GCP ERROR: Execution Exception - {}", ex.getMessage());
+
+        Map<String, Object> response = Map.of(
+                "status", 500,
+                "message", "Internal Server Error: GCP related issue."
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
+    }
+
+    @ExceptionHandler(InterruptedException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<Map<String, Object>> handleInterruptedException(InterruptedException ex) {
+        log.info("GCP ERROR: Interrupted Exception - {}", ex.getMessage());
+
+        Map<String, Object> response = Map.of(
+                "status", 500,
+                "message", "Internal Server Error: GCP related issue."
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
     }
 
     private HttpStatus mapGoogleStatusToHttp(StatusCode statusCode) {
