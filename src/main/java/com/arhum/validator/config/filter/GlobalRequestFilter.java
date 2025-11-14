@@ -1,4 +1,4 @@
-package com.arhum.validator.config.auth;
+package com.arhum.validator.config.filter;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;

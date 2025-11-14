@@ -1,6 +1,7 @@
 package com.arhum.validator.config.auth;
 
-import com.arhum.validator.model.enums.Role;
+import com.arhum.validator.config.CustomAccessDeniedHandler;
+import com.arhum.validator.config.filter.GlobalRequestFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.util.List;
 

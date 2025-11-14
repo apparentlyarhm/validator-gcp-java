@@ -1,4 +1,4 @@
-package com.arhum.validator.config.auth;
+package com.arhum.validator.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
