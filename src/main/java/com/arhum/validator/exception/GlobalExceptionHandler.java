@@ -1,5 +1,6 @@
 package com.arhum.validator.exception;
 
+import com.google.api.Http;
 import com.google.api.gax.rpc.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.io.IOException;
+import java.util.MissingFormatArgumentException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -84,5 +86,13 @@ public class GlobalExceptionHandler {
     public ErrorResponse handleForbidden(ForbiddenException ex){
         log.error("Not allowed to do action :: {}", ex.getMessage());
         return new ErrorResponse(HttpStatus.FORBIDDEN.value(), ex.getMessage());
+    }
+
+    // This is a good idea ONLY if our processing can raise this exception
+    @ExceptionHandler(MissingFormatArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleArgumentIssues(MissingFormatArgumentException ex) {
+        log.error("Check inputs :: {}", ex.getMessage());
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Check inputs");
     }
 }
