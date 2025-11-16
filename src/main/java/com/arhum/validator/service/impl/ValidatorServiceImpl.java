@@ -1,16 +1,16 @@
 package com.arhum.validator.service.impl;
 
-import com.arhum.validator.config.GlobalConfig;
 import com.arhum.validator.config.RconClient;
 import com.arhum.validator.exception.*;
+import com.arhum.validator.model.LoggedInUser;
 import com.arhum.validator.model.enums.IpStatus;
 import com.arhum.validator.model.enums.RconCommands;
-import com.arhum.validator.model.enums.Role;
 import com.arhum.validator.model.rcon.RconRequest;
 import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.response.*;
 import com.arhum.validator.service.contract.ValidatorService;
 import com.arhum.validator.util.GeneralUtils;
+import com.arhum.validator.util.UserUtils;
 import com.google.cloud.compute.v1.*;
 import com.google.cloud.storage.*;
 import lombok.SneakyThrows;
@@ -18,8 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -80,6 +78,9 @@ public class ValidatorServiceImpl implements ValidatorService {
 
     @Autowired
     private Storage storage;
+
+    @Autowired
+    private UserUtils userUtils;
 
     @Override
     public CommonResponse doPong() {
@@ -296,35 +297,12 @@ public class ValidatorServiceImpl implements ValidatorService {
     @Override
     public CommonResponse executeRcon(String address, RconRequest request) throws IOException {
         String res;
-
-        // TODO: move out from here
-        boolean isUserAdmin = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getAuthorities()
-                .stream()
-                .anyMatch(grantedAuthority -> grantedAuthority
-                        .getAuthority()
-                        .equals(String.valueOf(Role.ROLE_ADMIN)
-                        )
-                );
+        LoggedInUser user = userUtils.getLoggedInUser();
 
         try (RconClient client = new RconClient(address, Integer.parseInt(rconPort), rconPass)){
-            RconCommands commandEnum = request.getCommand();
-
-            if (!commandEnum.getIsEnabled()) {
-                throw new UnsupportedOperationException("Command '" + commandEnum.name() + "' is not enabled.");
-            }
-
-            if (commandEnum.getIsAdmin()) {
-                // if the command is admin, the user must also be admin
-                if (!isUserAdmin) {
-                    throw new ForbiddenException("Only admins can use this command", 403);
-                }
-            }
+            RconCommands commandEnum = validateCommand(request, user);
 
             if (commandEnum == RconCommands.CUSTOM) {
-                logger.info("{}", request.getArguments().size());
                 assert request.getArguments().size() <= 1 : "The first argument should house the entire command";
                 res = executeCommand(request.getArguments().get(0), client);
 
@@ -333,9 +311,26 @@ public class ValidatorServiceImpl implements ValidatorService {
                 res = executeCommand(finalCommand, client);
             }
 
+            logger.info("{} executed {}", user.getUsername(), commandEnum.name()); // this is important log
             return new CommonResponse(res);
         }
         // IOException in case of errors will be thrown by internal methods
+    }
+
+    private static RconCommands validateCommand(RconRequest request, LoggedInUser user) {
+        RconCommands commandEnum = request.getCommand();
+
+        if (!commandEnum.getIsEnabled()) {
+            throw new UnsupportedOperationException("Command '" + commandEnum.name() + "' is not enabled.");
+        }
+
+        if (commandEnum.getIsAdmin()) {
+            // if the command is admin, the user must also be admin
+            if (!user.getIsAdmin()) {
+                throw new ForbiddenException("Only admins can use this command", 403);
+            }
+        }
+        return commandEnum;
     }
 
     @Override

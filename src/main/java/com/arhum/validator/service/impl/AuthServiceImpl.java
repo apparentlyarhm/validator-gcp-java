@@ -81,7 +81,6 @@ public class AuthServiceImpl  implements AuthService {
 
         String jwt = Jwts.builder()
                 .setSubject("github|" + id)
-                .claim("email", email)
                 .claim("id", uid)
                 .claim("role", role)
                 .setIssuedAt(new Date())
