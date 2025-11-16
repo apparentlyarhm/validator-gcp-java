@@ -297,7 +297,8 @@ public class ValidatorServiceImpl implements ValidatorService {
     public CommonResponse executeRcon(String address, RconRequest request) throws IOException {
         String res;
 
-        boolean isAdmin = SecurityContextHolder
+        // TODO: move out from here
+        boolean isUserAdmin = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getAuthorities()
@@ -317,7 +318,7 @@ public class ValidatorServiceImpl implements ValidatorService {
 
             if (commandEnum.getIsAdmin()) {
                 // if the command is admin, the user must also be admin
-                if (!isAdmin) {
+                if (!isUserAdmin) {
                     throw new ForbiddenException("Only admins can use this command", 403);
                 }
             }
