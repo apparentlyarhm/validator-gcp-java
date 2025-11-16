@@ -8,10 +8,11 @@ public enum RconCommands {
     KICK("kick %s", true, true),
     BAN("ban %s", true, true),
     PARDON("pardon %s", true, true),
-    TELEPORT("tp %s %s", true,false), // player1 player2
+    TELEPORT("tp %s %s", true,false), // player1, player2
+    GAMEMODE("gamemode %s %s", true, true), // mode, player
 
     // other
-    SAY("say %s", true, false),
+    SAY("say %s", true, true),
     TIME_SET("time set %s", true, false),
     WEATHER_SET("weather %s", true, false),
     STOP("stop", true, true),
