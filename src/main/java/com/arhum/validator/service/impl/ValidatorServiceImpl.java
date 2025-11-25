@@ -135,6 +135,8 @@ public class ValidatorServiceImpl implements ValidatorService {
         if (operation.hasError()) {
             throw new InternalServerException("Failed to patch firewall: " + operation.getError(), 500);
         }
+        // TODO: add db entry
+
         return new CommonResponse("Done");
     }
 
@@ -227,6 +229,8 @@ public class ValidatorServiceImpl implements ValidatorService {
 
     @Override
     public InstanceDetailResponse getMachineDetails() throws BaseException {
+        // TODO: perhaps we dont need to fetch everytime?
+
         Instance instance = instancesClient.get(projectId, zone, instanceName);
 
         String publicIp = null;
@@ -312,6 +316,8 @@ public class ValidatorServiceImpl implements ValidatorService {
             }
 
             logger.info("{} executed {}", user.getUsername(), commandEnum.name()); // this is important log
+
+            // TODO: add db entry
             return new CommonResponse(res);
         }
         // IOException in case of errors will be thrown by internal methods
