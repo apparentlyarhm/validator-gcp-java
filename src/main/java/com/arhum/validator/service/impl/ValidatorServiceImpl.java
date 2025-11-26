@@ -1,6 +1,8 @@
 package com.arhum.validator.service.impl;
 
 import com.arhum.validator.config.RconClient;
+import com.arhum.validator.entity.Execution;
+import com.arhum.validator.entity.ExecutionParameter;
 import com.arhum.validator.exception.*;
 import com.arhum.validator.model.LoggedInUser;
 import com.arhum.validator.model.enums.IpStatus;
@@ -8,11 +10,14 @@ import com.arhum.validator.model.enums.RconCommands;
 import com.arhum.validator.model.rcon.RconRequest;
 import com.arhum.validator.model.request.AddressAddRequest;
 import com.arhum.validator.model.response.*;
+import com.arhum.validator.repository.ExecutionParameterRepo;
+import com.arhum.validator.repository.ExecutionRepo;
 import com.arhum.validator.service.contract.ValidatorService;
 import com.arhum.validator.util.GeneralUtils;
 import com.arhum.validator.util.UserUtils;
 import com.google.cloud.compute.v1.*;
 import com.google.cloud.storage.*;
+import jakarta.transaction.Transactional;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +71,12 @@ public class ValidatorServiceImpl implements ValidatorService {
 
     @Value("${rcon.pass}")
     private String rconPass;
+
+    @Autowired
+    private ExecutionRepo executionRepo;
+
+    @Autowired
+    private ExecutionParameterRepo executionParameterRepo;
 
     @Autowired
     private FirewallsClient firewallsClient;
@@ -299,6 +310,7 @@ public class ValidatorServiceImpl implements ValidatorService {
         }
     }
     @Override
+    @Transactional
     public CommonResponse executeRcon(String address, RconRequest request) throws IOException {
         String res;
         LoggedInUser user = userUtils.getLoggedInUser();
@@ -317,7 +329,21 @@ public class ValidatorServiceImpl implements ValidatorService {
 
             logger.info("{} executed {}", user.getUsername(), commandEnum.name()); // this is important log
 
-            // TODO: add db entry
+            Execution execution = new Execution();
+            execution.setCommand(commandEnum);
+            execution.setUsername(user.getUsername());
+            execution.setParameterCount(request.getArguments().size());
+
+            execution = executionRepo.save(execution);
+
+            for (String arg : request.getArguments()) {
+                ExecutionParameter parameter = new ExecutionParameter();
+                parameter.setParameterValue(arg);
+                parameter.setExecution(execution);
+
+                executionParameterRepo.save(parameter);
+            }
+
             return new CommonResponse(res);
         }
         // IOException in case of errors will be thrown by internal methods
